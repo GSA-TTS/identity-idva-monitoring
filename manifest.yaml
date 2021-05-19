@@ -1,0 +1,9 @@
+---
+applications:
+  - name: monitoring
+    routes:
+      - route: ((ROUTE))
+    memory: ((MEMORY))
+    instances: ((INSTANCES))
+    buildpacks:
+      - binary_buildpack
