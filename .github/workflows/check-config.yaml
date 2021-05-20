@@ -4,9 +4,6 @@
 name: Check-Config
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     paths:
       - 'prometheus.yml'
