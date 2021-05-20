@@ -12,13 +12,13 @@ on:
       - 'prometheus.yml'
 
 jobs:
-  lint:
+  check-config:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
       - name: Install Prometheus
-        run: install_prometheus.sh
+        run: ./install_prometheus.sh
 
       - name: Validate Prometheus Config
         run: ./promtool check config prometheus.yml
