@@ -1,1 +1,1 @@
-web: ./setup.sh && ./prometheus --web.listen-address="0.0.0.0:$PORT"
+web: ./install_prometheus.sh && ./prometheus --web.listen-address="0.0.0.0:$PORT"
