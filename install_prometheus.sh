@@ -5,9 +5,8 @@ set -e
 prometheus_download_url="https://github.com/prometheus/prometheus/releases/download/v2.27.1/prometheus-2.27.1.linux-amd64.tar.gz"
 prometheus_sha256sum="ce637d0167d5e6d2561f3bd37e1c58fe8601e13e4e1ea745653c068f6e1317ae  prometheus.tar.gz"
 
-download_output_file="prometheus.tar.gz"
-
 # Download the Prometheus archive
+download_output_file="prometheus.tar.gz"
 wget --quiet --output-document "$download_output_file" "$prometheus_download_url"
 
 # Compare sha256sum to known value at https://prometheus.io/download/
