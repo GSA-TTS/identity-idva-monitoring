@@ -27,3 +27,12 @@ scrape_configs:
 
     static_configs:
     - targets: ['localhost:8080']
+
+  - job_name: 'dns-discovery-api-gateway'
+    dns_sd_configs:
+      - names:
+          - 'give-dev.apps.internal'
+          - 'give-test.apps.internal'
+          - 'give-prod.apps.internal'
+        type: 'A'
+        port: 8100
