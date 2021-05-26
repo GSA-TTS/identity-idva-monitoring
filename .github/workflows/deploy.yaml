@@ -62,7 +62,7 @@ jobs:
 
           # Set the outputs for this step
           echo "::set-output name=SPACE::$target_environment"
-          echo "::set-output name=ENVIRONMENT_NAME::$service_route"
+          echo "::set-output name=ENVIRONMENT_NAME::$environment_name"
           echo "Deploying to $target_environment"
 
       - name: Set CF CLI Target
