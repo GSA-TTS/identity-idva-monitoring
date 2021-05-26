@@ -78,4 +78,4 @@ jobs:
           cf add-network-policy monitoring transaction-log
           cf add-network-policy monitoring idemia
           cf add-network-policy monitoring usps
-          cf add-network-policy monitoring api-gateway
+          cf add-network-policy monitoring api-gateway --port 8100 --protocol tcp
