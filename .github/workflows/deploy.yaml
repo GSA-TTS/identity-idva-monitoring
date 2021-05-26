@@ -50,11 +50,11 @@ jobs:
           if [[ $GITHUB_REF == "refs/heads/main" ]]; then
               # Pushes to main are deployed to dev
               target_environment=give-dev
-              service_route=identity-give-monitoring-dev.apps.internal
+              environment_name=dev
           elif [[ $GITHUB_REF =~ refs/tags/* ]]; then
               # Tags on main are deployed to test
               target_environment=give-test
-              service_route=identity-give-monitoring-test.apps.internal
+              environment_name=test
           else
               echo 'Unknown deployment target'
               exit 1
@@ -62,7 +62,7 @@ jobs:
 
           # Set the outputs for this step
           echo "::set-output name=SPACE::$target_environment"
-          echo "::set-output name=ROUTE::$service_route"
+          echo "::set-output name=ENVIRONMENT_NAME::$environment_name"
           echo "Deploying to $target_environment"
 
       - name: Set CF CLI Target
@@ -70,7 +70,7 @@ jobs:
 
       - name: Deploy application
         run: cf push --vars-file vars.yaml
-          --var ROUTE=${{ steps.deployment-target.outputs.ROUTE }}
+          --var ENVIRONMENT_NAME=${{ steps.deployment-target.outputs.ENVIRONMENT_NAME }}
           --strategy rolling
 
       - name: Apply CF Network Policies
@@ -78,4 +78,4 @@ jobs:
           cf add-network-policy monitoring transaction-log
           cf add-network-policy monitoring idemia
           cf add-network-policy monitoring usps
-          cf add-network-policy monitoring api-gateway
+          cf add-network-policy monitoring api-gateway --port 8100 --protocol tcp

@@ -2,7 +2,7 @@
 applications:
   - name: monitoring
     routes:
-      - route: ((ROUTE))
+      - route: identity-give-monitoring-((ENVIRONMENT_NAME)).apps.internal
     memory: ((MEMORY))
     instances: ((INSTANCES))
     buildpacks:
