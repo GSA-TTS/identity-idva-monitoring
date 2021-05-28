@@ -68,6 +68,11 @@ jobs:
       - name: Set CF CLI Target
         run: cf target -o ${{ secrets.CF_ORG }} -s ${{ steps.deployment-target.outputs.SPACE }}
 
+      - name: Generate prometheus config
+        run: envsubst < prometheus-config.yml > prometheus.yml
+        env:
+          ENVIRONMENT_NAME: ${{ steps.deployment-target.outputs.ENVIRONMENT_NAME }}
+
       - name: Deploy application
         run: cf push --vars-file vars.yaml
           --var ENVIRONMENT_NAME=${{ steps.deployment-target.outputs.ENVIRONMENT_NAME }}

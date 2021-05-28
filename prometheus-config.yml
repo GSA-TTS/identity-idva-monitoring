@@ -31,8 +31,27 @@ scrape_configs:
   - job_name: 'dns-discovery-api-gateway'
     dns_sd_configs:
       - names:
-          - 'give-dev.apps.internal'
-          - 'give-test.apps.internal'
-          - 'give-prod.apps.internal'
+          - 'give-${ENVIRONMENT_NAME}.apps.internal'
         type: 'A'
         port: 8100
+
+  - job_name: 'dns-discovery-usps'
+    dns_sd_configs:
+      - names:
+          - 'identity-give-usps-${ENVIRONMENT_NAME}.apps.internal'
+        type: 'A'
+        port: 8080
+
+  - job_name: 'dns-discovery-idemia'
+    dns_sd_configs:
+      - names:
+          - 'identity-give-idemia-${ENVIRONMENT_NAME}.apps.internal'
+        type: 'A'
+        port: 8080
+
+  - job_name: 'dns-discovery-cf-metrics'
+    dns_sd_configs:
+      - names:
+          - 'identity-give-cf-metrics-${ENVIRONMENT_NAME}.apps.internal'
+        type: 'A'
+        port: 8080
