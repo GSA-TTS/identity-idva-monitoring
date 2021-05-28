@@ -80,7 +80,7 @@ jobs:
 
       - name: Apply CF Network Policies
         run: |
-          cf add-network-policy monitoring transaction-log
           cf add-network-policy monitoring idemia
           cf add-network-policy monitoring usps
+          cf add-network-policy monitoring cf-metrics
           cf add-network-policy monitoring api-gateway --port 8100 --protocol tcp
