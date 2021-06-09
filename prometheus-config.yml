@@ -50,3 +50,11 @@ scrape_configs:
           - 'identity-give-cf-metrics-${ENVIRONMENT_NAME}.apps.internal'
         type: 'A'
         port: 8080
+
+  - job_name: 'dns-discovery-monitoring-dash'
+    dns_sd_configs:
+      - names:
+          - 'identity-give-monitoring-dash-${ENVIRONMENT_NAME}.apps.internal'
+        type: 'A'
+        port: 8080
+
