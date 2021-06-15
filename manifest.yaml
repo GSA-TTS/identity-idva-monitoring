@@ -7,3 +7,6 @@ applications:
     instances: ((INSTANCES))
     buildpacks:
       - binary_buildpack
+    processes:
+      - type: web
+        command: ./install_prometheus.sh && ./prometheus --web.listen-address="0.0.0.0:$PORT"
