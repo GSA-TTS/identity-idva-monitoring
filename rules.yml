@@ -1,0 +1,7 @@
+---
+groups:
+  - name: test
+    rules:
+      - alert: HighApiGatewayCPU
+        expr: avg(cpu{app="api-gateway"}) > 5
+        for: 1m
