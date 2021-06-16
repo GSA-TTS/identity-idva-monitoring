@@ -10,16 +10,3 @@ applications:
     processes:
       - type: web
         command: ./install_prometheus.sh && ./prometheus --web.listen-address="0.0.0.0:$PORT"
-
-  - name: alerts
-    routes:
-      - route: identity-give-monitoring-alerts-((ENVIRONMENT_NAME)).apps.internal
-    memory: 128MB
-    instances: 2
-    buildpacks:
-      - binary_buildpack
-    processes:
-      - type: web
-        command: ./install_alertmanager.sh && cd alerts && ./alertmanager --web.listen-address="0.0.0.0:$PORT"
-    env:
-      SLACK_URL: ((SLACK_URL))
