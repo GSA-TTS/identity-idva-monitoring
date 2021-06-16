@@ -1,7 +1,22 @@
 ---
 groups:
-  - name: test
+  - name: HardwareAlerts
     rules:
-      - alert: HighApiGatewayCPU
-        expr: avg(cpu{app="api-gateway"}) > 5
-        for: 1m
+      - alert: "High app CPU utilization"
+        expr: avg by (app) (cpu) > 80
+        for: 5m
+        annotations:
+          summary: "High CPU usage for application: ({{ $labels.app }})"
+          description: "CPU load is over 80%."
+      - alert: "High app memory utilization"
+        expr: avg by (app) (memory_utilization) > 80
+        for: 5m
+        annotations:
+          summary: "High memory usage for application: ({{ $labels.app }})"
+          description: "Memory usage is over 80% of allocation."
+      - alert: "High app disk utilization"
+        expr: avg by (app) (disk_utilization) > 80
+        for: 5m
+        annotations:
+          summary: "High disk usage for application: ({{ $labels.app }})"
+          description: "Disk usage is over 80% of allocation."
