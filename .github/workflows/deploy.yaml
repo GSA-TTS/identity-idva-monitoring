@@ -68,10 +68,13 @@ jobs:
       - name: Set CF CLI Target
         run: cf target -o ${{ secrets.CF_ORG }} -s ${{ steps.deployment-target.outputs.SPACE }}
 
-      - name: Generate prometheus config
-        run: envsubst < prometheus-config.yml > prometheus.yml
+      - name: Generate config files
+        run: |
+          envsubst < prometheus-config.yml > prometheus.yml
+          envsubst < alerts/alert-config.yml > alerts/alertmanager.yml
         env:
           ENVIRONMENT_NAME: ${{ steps.deployment-target.outputs.ENVIRONMENT_NAME }}
+          SLACK_URL: ${{ secrets.SLACK_URL }}
 
       - name: Deploy application
         run: cf push --vars-file vars.yaml
@@ -80,6 +83,7 @@ jobs:
 
       - name: Apply CF Network Policies
         run: |
+          cf add-network-policy monitoring alerts
           cf add-network-policy monitoring idemia
           cf add-network-policy monitoring usps
           cf add-network-policy monitoring cf-metrics
