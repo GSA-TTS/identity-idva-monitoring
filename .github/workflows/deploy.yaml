@@ -79,6 +79,7 @@ jobs:
       - name: Deploy application
         run: cf push --vars-file vars.yaml
           --var ENVIRONMENT_NAME=${{ steps.deployment-target.outputs.ENVIRONMENT_NAME }}
+          --var SLACK_URL=${{ secrets.SLACK_URL }}
           --strategy rolling
 
       - name: Apply CF Network Policies
