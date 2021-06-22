@@ -84,10 +84,11 @@ jobs:
 
       # Deploy the prometheus alertmanager
       - name: Deploy alerts
-        run: cf push -f manifest-alerts.yaml --vars-file vars.yaml
+        run: cf push -f manifest-alerts.yaml
           --var ENVIRONMENT_NAME=${{ steps.deployment-target.outputs.ENVIRONMENT_NAME }}
           --var SLACK_URL=${{ secrets.SLACK_URL }}
-          --strategy rolling
+          --memory 64MB
+          --instances 2
 
       - name: Apply CF Network Policies
         run: |
