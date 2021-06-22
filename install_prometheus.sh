@@ -5,8 +5,8 @@ download_output_file="prometheus.tar.gz"
 
 # To update prometheus, update the download URL and checksum below.
 # New versions can be found at https://prometheus.io/download/
-download_url="https://github.com/prometheus/prometheus/releases/download/v2.27.1/prometheus-2.27.1.linux-amd64.tar.gz"
-valid_hash="ce637d0167d5e6d2561f3bd37e1c58fe8601e13e4e1ea745653c068f6e1317ae  $download_output_file"
+download_url="https://github.com/prometheus/prometheus/releases/download/v2.28.0/prometheus-2.28.0.linux-amd64.tar.gz"
+valid_hash="d2d0ded275090a13208114b633abe41c40e14c83ff5ec07230d79b4da1d8e701  $download_output_file"
 
 # Download the Prometheus archive
 wget --quiet --output-document "$download_output_file" "$download_url"
