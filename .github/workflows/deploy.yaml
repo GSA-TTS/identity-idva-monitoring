@@ -11,6 +11,8 @@ on:
       - '*'
     paths-ignore:
       - '**.md'  # All markdown files in the repository
+  release:
+    types: [released]
 
 jobs:
   check-config:
