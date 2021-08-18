@@ -1,19 +1,19 @@
-# GIVE Monitoring Service
-Monitoring for GIVE microservices in cloud.gov
+# IDVA Monitoring Service
+Monitoring for IDVA microservices in cloud.gov
 
 ## Why this project
-The GIVE project is composed of many different microservices, each needing to
+The IDVA project is composed of many different microservices, each needing to
 be monitored for performance, stability, and uptime. The monitoring
 microservice has the following goals:
-* Provide monitoring capabilities for GIVE microservices
-* Alert GIVE operators/admins on specified metric thresholds
+* Provide monitoring capabilities for IDVA microservices
+* Alert IDVA operators/admins on specified metric thresholds
 
 ## CI/CD Workflows with GitHub Actions
 The most up-to-date information about the CI/CD flows for this repo can be found in the
-[GitHub workflows directory](https://github.com/18F/identity-give-monitoring/tree/main/.github/workflows)
+[GitHub workflows directory](https://github.com/18F/identity-idva-monitoring/tree/main/.github/workflows)
 
 ## Implementation
-GIVE monitoring is a Prometheus server deployed to Cloud.gov and configured to monitor
+IDVA monitoring is a Prometheus server deployed to Cloud.gov and configured to monitor
 applications based on DNS querying of the application routes. For all applications we
 wish to monitor, adding a `dns_sd_config` for within the [prometheus-config.yml](#prometheus-config.yml)
 adds the application to prometheus's monitoring. By using the `dns_sd_config` we are
