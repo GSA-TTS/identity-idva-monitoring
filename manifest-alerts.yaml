@@ -2,7 +2,7 @@
 applications:
   - name: alerts
     routes:
-      - route: identity-give-monitoring-alerts-((ENVIRONMENT_NAME)).apps.internal
+      - route: identity-idva-monitoring-alerts-((ENVIRONMENT_NAME)).apps.internal
     memory: 64MB
     instances: 2
     buildpacks:
