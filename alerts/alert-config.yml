@@ -12,6 +12,7 @@ receivers:
     slack_configs:
       - channel: '#idva-dev'
         text: |
+          Environment: ${ENVIRONMENT_NAME}
           Summary: {{ .CommonAnnotations.summary }}
           Description: {{ .CommonAnnotations.description }}
 inhibit_rules:
