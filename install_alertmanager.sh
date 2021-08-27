@@ -7,8 +7,8 @@ cd alerts
 download_output_file="alertmanager.tar.gz"
 
 # To update alertmanager, update the download URL and hash below.
-download_url="https://github.com/prometheus/alertmanager/releases/download/v0.22.2/alertmanager-0.22.2.linux-amd64.tar.gz"
-valid_hash="9c3b1cce9c74f5cecb07ec4a636111ca52696c0a088dbaecf338594d6e55cd1a  $download_output_file"
+download_url="https://github.com/prometheus/alertmanager/releases/download/v0.23.0/alertmanager-0.23.0.linux-amd64.tar.gz"
+valid_hash="77793c4d9bb92be98f7525f8bc50cb8adb8c5de2e944d5500e90ab13918771fc  $download_output_file"
 
 # Download the Prometheus archive
 wget --quiet --output-document "$download_output_file" "$download_url"
