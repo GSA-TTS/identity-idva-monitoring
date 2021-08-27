@@ -10,7 +10,7 @@ route:
 receivers:
   - name: 'web.hook'
     slack_configs:
-      - channel: '#give-dev'
+      - channel: '#idva-dev'
 inhibit_rules:
   - source_match:
       severity: 'critical'
