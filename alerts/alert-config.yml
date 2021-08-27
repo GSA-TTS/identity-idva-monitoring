@@ -11,6 +11,9 @@ receivers:
   - name: 'web.hook'
     slack_configs:
       - channel: '#idva-dev'
+        text: |
+          Summary: {{ .CommonAnnotations.summary }}
+          Description: {{ .CommonAnnotations.description }}
 inhibit_rules:
   - source_match:
       severity: 'critical'
