@@ -3,20 +3,19 @@ groups:
   - name: HardwareAlerts
     rules:
       - alert: "High CPU utilization"
-        expr: avg by (app) (cpu) > 80
-        for: 5m
+        expr: avg by (app) (avg_over_time(cpu[1m])) > 80
         annotations:
-          summary: "High CPU usage for application: ({{ $labels.app }})"
+          summary: 'High CPU usage ({{ $value | printf "%.2f"}}%) for application: {{ $labels.app }}.'
           description: "CPU load has exceeded 80% for at least 5 consecutive minutes."
+
       - alert: "High memory utilization"
-        expr: avg by (app) (memory_utilization) > 80
-        for: 5m
+        expr: avg by (app) (avg_over_time(memory_utilization[1m])) > 80
         annotations:
-          summary: "High memory usage for application: ({{ $labels.app }})"
+          summary: 'High memory usage ({{ $value | printf "%.2f"}}%) for application: {{ $labels.app }}.'
           description: "Memory usage has exceeded 80% for at least 5 consecutive minutes."
+
       - alert: "High disk utilization"
-        expr: avg by (app) (disk_utilization) > 80
-        for: 5m
+        expr: avg by (app) (avg_over_time(disk_utilization[1m])) > 80
         annotations:
-          summary: "High disk usage for application: ({{ $labels.app }})"
+          summary: 'High disk usage ({{ $value | printf "%.2f"}}%) for application: {{ $labels.app }}.'
           description: "Disk usage has exceeded 80% for at least 5 consecutive minutes."
