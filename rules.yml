@@ -98,7 +98,7 @@ groups:
   - name: AppCrashAlerts
     rules:
       - alert: Non-Zero rate of application crashes
-        expr: sum by (app) (rate(crash[5m]))
+        expr: sum by (app) (rate(crash[5m])) != 0
         annotations:
           summary: The {{ $labels.app }} has crashed.
           description: >-
