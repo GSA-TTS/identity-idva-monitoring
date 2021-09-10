@@ -2,21 +2,105 @@
 groups:
   - name: HardwareAlerts
     rules:
-      - alert: "High CPU utilization"
-        expr: avg by (app) (cpu) > 80
-        for: 5m
+      # High utilization alerts
+      - alert: High CPU utilization
+        expr: avg by (app) (avg_over_time(cpu[5m])) > 80
         annotations:
-          summary: "High CPU usage for application: ({{ $labels.app }})"
-          description: "CPU load has exceeded 80% for at least 5 consecutive minutes."
-      - alert: "High memory utilization"
-        expr: avg by (app) (memory_utilization) > 80
-        for: 5m
+          summary: >-
+            High CPU usage ({{ $value | printf "%.2f"}}%) for
+            {{ $labels.app }}.
+          description: >-
+            CPU load has exceeded 80% for at least 5 consecutive minutes.
+
+      - alert: High memory utilization
+        expr: avg by (app) (avg_over_time(memory_utilization[5m])) > 80
         annotations:
-          summary: "High memory usage for application: ({{ $labels.app }})"
-          description: "Memory usage has exceeded 80% for at least 5 consecutive minutes."
-      - alert: "High disk utilization"
-        expr: avg by (app) (disk_utilization) > 80
-        for: 5m
+          summary: >-
+            High memory usage ({{ $value | printf "%.2f"}}%) for
+            {{ $labels.app }}.
+          description: >-
+            Memory usage has exceeded 80% for at least 5 consecutive minutes.
+
+      - alert: High disk utilization
+        expr: avg by (app) (avg_over_time(disk_utilization[5m])) > 80
         annotations:
-          summary: "High disk usage for application: ({{ $labels.app }})"
-          description: "Disk usage has exceeded 80% for at least 5 consecutive minutes."
+          summary: >-
+            High disk usage ({{ $value | printf "%.2f"}}%) for
+            {{ $labels.app }}.
+          description: >-
+            Disk usage has exceeded 80% for at least 5 consecutive minutes.
+
+      # No utilization alerts
+      - alert: No CPU utilization
+        expr: avg by (app) (avg_over_time(cpu[5m])) == 0
+        annotations:
+          summary: Zero CPU usage for {{ $labels.app }}.
+          description: 0% CPU usage likely means the app is not running.
+
+      - alert: No memory utilization
+        expr: avg by (app) (avg_over_time(memory_utilization[5m])) == 0
+        annotations:
+          summary: Zero memory usage for {{ $labels.app }}.
+          description: 0% memory usage likely means the app is not running.
+
+      - alert: No disk utilization
+        expr: avg by (app) (avg_over_time(disk_utilization[5m])) == 0
+        annotations:
+          summary: Zero disk usage for {{ $labels.app }}.
+          description: 0% disk usage likely means the app is not running.
+
+  - name: HTTPResponseAlerts
+    rules:
+      # Unauthorized responses 401 + 403
+      - alert: High number of unauthorized requests
+        expr: sum(rate(kong_http_status{code=~"401|403"}[1m])) > 1
+        annotations:
+          summary: The rate of unauthorized HTTP requests is abnormally high.
+          description: >-
+            Over the last minute, the rate of unauthorized (401 or 403)
+            responses was {{ $value | printf "%.2f"}}/second.
+
+      # 5XX error responses
+      - alert: Server Errors
+        expr: sum by (app) (rate(requests{status_range="5xx"}[5m])) != 0
+        annotations:
+          summary: >-
+            {{ $labels.app }} is returning HTTP response codes in the 5xx
+            server error range.
+          description: >-
+            The {{ $labels.app }} service may be experiencing issues and has
+            returned at least 1 5XX response in the last 5 minutes.
+
+  - name: ResponseTimeAlerts
+    rules:
+      # High response times
+      - alert: High response times for HTTP requests
+        # Number of requests per service per second that were resolved within
+        # 400ms over the last 5 minutes
+        #
+        # divided by
+        #
+        # Number of requests per service per second over the last 5 minutes
+        #
+        # Gives the percentage of requests that are being responded to within
+        # 400ms. If this goes below 95%, sound the alarms.
+        expr: >-
+          sum(rate(kong_latency_bucket{le="00400.0", type="request"}[5m]))
+          by (service)
+          /
+          sum(rate(kong_latency_count{type="request"}[5m])) by (service) < 0.95
+        annotations:
+          summary: The {{ $labels.service }} app is experiencing high latency.
+          description: >-
+            More than 5% of requests to {{ $labels.service }} are taking longer
+            than 400ms to complete.
+
+  - name: AppCrashAlerts
+    rules:
+      - alert: Non-Zero rate of application crashes
+        expr: sum by (app) (rate(crash[5m])) != 0
+        annotations:
+          summary: The {{ $labels.app }} has crashed.
+          description: >-
+            Within the last 5 minutes, the {{ $labels.app }} has crashed at
+            least once.
