@@ -1,4 +1,6 @@
 #!/bin/bash
+# See https://docs.cloudfoundry.org/devguide/deploy-apps/instance-identity.html
+# for information on Cloud Foundry Instance Identity Credentials.
 {
     echo "---"
     echo "tls_server_config:"
