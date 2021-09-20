@@ -11,6 +11,9 @@ alerting:
             - 'identity-idva-monitoring-alerts-${ENVIRONMENT_NAME}.apps.internal'
           type: 'A'
           port: 8080
+      tls_config:
+        insecure_skip_verify: true
+      scheme: https
 
 # Load rules once and periodically evaluate them according to the
 # global 'evaluation_interval'.
@@ -23,6 +26,9 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:8080']
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
 
   - job_name: 'dns-discovery-api-gateway'
     dns_sd_configs:
@@ -50,3 +56,6 @@ scrape_configs:
           - 'identity-idva-monitoring-dash-${ENVIRONMENT_NAME}.apps.internal'
         type: 'A'
         port: 8080
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
