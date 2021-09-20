@@ -7,8 +7,7 @@ applications:
     instances: 2
     buildpacks:
       - binary_buildpack
-    processes:
-      - type: web
-        command: ./install_alertmanager.sh && cd alerts && ./alertmanager --web.listen-address="0.0.0.0:$PORT"
+    command: source start-alertmanager.sh
     env:
       SLACK_URL: ((SLACK_URL))
+      ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))

@@ -1,5 +1,6 @@
 ---
-# This workflow will run unit tests and deploy the application to a target environment
+# This workflow will run unit tests and deploy the application to
+# a target environment
 
 name: Deploy
 
@@ -20,11 +21,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install Prometheus
-        run: ./install_prometheus.sh
-
       - name: Validate Prometheus Config
-        run: ./promtool check config prometheus.yml
+        run: |
+          ./install_prometheus.sh
+          ./promtool check config prometheus.yml
+        working-directory: ./prometheus
 
   deploy:
     if: github.repository_owner == '18F'
@@ -44,6 +45,7 @@ jobs:
         run: |
           envsubst < prometheus-config.yml > prometheus.yml
           envsubst < alerts/alert-config.yml > alerts/alertmanager.yml
+        working-directory: ./prometheus
         env:
           ENVIRONMENT_NAME: ${{ steps.cf-setup.outputs.target-environment }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
@@ -53,6 +55,7 @@ jobs:
         run: cf push --vars-file vars.yaml
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
           --strategy rolling
+        working-directory: ./prometheus
 
       # Deploy the prometheus alertmanager
       - name: Deploy alerts
@@ -61,6 +64,7 @@ jobs:
           --var SLACK_URL=${{ secrets.SLACK_URL }}
           --memory 64MB
           --instances 2
+        working-directory: ./alertmanager
 
       - name: Apply CF Network Policies
         run: |

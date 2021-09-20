@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-mkdir -p alerts
-cd alerts
-
 download_output_file="alertmanager.tar.gz"
 
 # To update alertmanager, update the download URL and hash below.
