@@ -1,5 +1,5 @@
 ./install_alertmanager.sh
-../create_web_config.sh
+./create_web_config.sh
 
 if [ -z "$ENVIRONMENT_NAME" ]; then
     echo "Error: empty ENVIRONMENT_NAME environment variable."
