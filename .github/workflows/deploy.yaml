@@ -43,9 +43,8 @@ jobs:
 
       - name: Generate config files
         run: |
-          envsubst < prometheus-config.yml > prometheus.yml
-          envsubst < alerts/alert-config.yml > alerts/alertmanager.yml
-        working-directory: ./prometheus
+          envsubst < prometheus/prometheus-config.yml > prometheus/prometheus.yml
+          envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
         env:
           ENVIRONMENT_NAME: ${{ steps.cf-setup.outputs.target-environment }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
