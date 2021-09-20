@@ -1,6 +1,6 @@
 ---
-#The check-config workflow will run the Prometheus 'promtool check config'
-#command to validate the configuration file.
+# The check-config workflow will run the Prometheus 'promtool check config'
+# command to validate the configuration file.
 name: Check-Config
 
 on:
@@ -14,8 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install Prometheus
-        run: ./install_prometheus.sh
-
       - name: Validate Prometheus Config
-        run: ./promtool check config prometheus.yml
+        run: |
+          ./install_prometheus.sh
+          ./promtool check config prometheus.yml
+        working-directory: ./prometheus
