@@ -7,9 +7,7 @@ applications:
     instances: ((INSTANCES))
     buildpacks:
       - binary_buildpack
-    processes:
-      - type: web
-        command: |
-          ./install_prometheus.sh && \
-          ./create_web_config.sh && \
-          ./prometheus --web.listen-address="0.0.0.0:$PORT" --storage.tsdb.retention.size="950MB" --web.config.file=web-config.yml
+    command: |
+      ./install_prometheus.sh && \
+      ./create_web_config.sh && \
+      ./prometheus --web.listen-address="0.0.0.0:$PORT" --storage.tsdb.retention.size="950MB" --web.config.file=web-config.yml
