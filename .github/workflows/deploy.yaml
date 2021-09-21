@@ -58,7 +58,7 @@ jobs:
 
       # Deploy the prometheus alertmanager
       - name: Deploy alerts
-        run: cf push manifest.yaml
+        run: cf push
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
           --var SLACK_URL=${{ secrets.SLACK_URL }}
           --memory 64MB
