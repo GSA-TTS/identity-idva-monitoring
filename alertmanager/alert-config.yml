@@ -10,7 +10,7 @@ route:
 receivers:
   - name: 'web.hook'
     slack_configs:
-      - channel: '#idva-dev'
+      - channel: '#idva-alerts'
         text: |
           Environment: ${ENVIRONMENT_NAME}
           Summary: {{ .CommonAnnotations.summary }}
