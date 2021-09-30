@@ -34,6 +34,7 @@ jobs:
         run: |
           ./install_prometheus.sh
           ./promtool check config prometheus.yml
+          ./promtool check rules rules.yml
         working-directory: ./prometheus
 
       - name: Validate Alertmanager Config
