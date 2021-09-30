@@ -6,7 +6,7 @@ name: Check-Config
 on:
   pull_request:
     paths:
-      - 'prometheus.yml'
+      - '**/prometheus-config.yml'
 
 jobs:
   check-config:
