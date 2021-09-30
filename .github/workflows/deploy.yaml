@@ -21,6 +21,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Generate config files
+        run: |
+          envsubst < prometheus/prometheus-config.yml > prometheus/prometheus.yml
+          envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
+        env:
+          # Use 'fake' environment variables since we're just checking syntax
+          ENVIRONMENT_NAME: dev
+          SLACK_URL: https://slack.com
+
       - name: Validate Prometheus Config
         run: |
           ./install_prometheus.sh
