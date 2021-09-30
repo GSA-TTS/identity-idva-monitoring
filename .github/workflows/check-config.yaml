@@ -1,12 +1,13 @@
 ---
-# The check-config workflow will run the Prometheus 'promtool check config'
-# command to validate the configuration file.
+# The check-config workflow will run the Prometheus 'promtool' and
+# 'amtool' config validation checks against the config files in the repo.
 name: Check-Config
 
 on:
   pull_request:
     paths:
       - '**/prometheus-config.yml'
+      - '**/alert-config.yml'
 
 jobs:
   check-config:
@@ -14,15 +15,23 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Generate config
+      - name: Generate config files
         run: |
           envsubst < prometheus/prometheus-config.yml > prometheus/prometheus.yml
+          envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
         env:
           # Use 'fake' environment variables since we're just checking syntax
           ENVIRONMENT_NAME: dev
+          SLACK_URL: https://slack.com
 
       - name: Validate Prometheus Config
         run: |
           ./install_prometheus.sh
           ./promtool check config prometheus.yml
         working-directory: ./prometheus
+
+      - name: Validate Alertmanager Config
+        run: |
+          ./install_alertmanager.sh
+          ./amtool check-config alertmanager.yml
+        working-directory: ./alertmanager
