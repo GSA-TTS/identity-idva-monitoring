@@ -14,6 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Generate config
+        run: |
+          envsubst < prometheus/prometheus-config.yml > prometheus/prometheus.yml
+        env:
+          # Use 'fake' environment variables since we're just checking syntax
+          ENVIRONMENT_NAME: dev
+
       - name: Validate Prometheus Config
         run: |
           ./install_prometheus.sh
