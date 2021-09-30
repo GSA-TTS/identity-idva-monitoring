@@ -36,6 +36,12 @@ jobs:
           ./promtool check config prometheus.yml
         working-directory: ./prometheus
 
+      - name: Validate Alertmanager Config
+        run: |
+          ./install_alertmanager.sh
+          ./amtool check-config alertmanager.yml
+        working-directory: ./alertmanager
+
   deploy:
     if: github.repository_owner == '18F'
     needs: check-config
