@@ -1,19 +1,21 @@
 #!/bin/bash
 set -e
 
-download_output_file="prometheus.tar.gz"
+# To update Prometheus, simply update the version number below
+version_num="2.30.2"
+download_url="https://github.com/prometheus/prometheus/releases/download/v$version_num"
+archive_name="prometheus-$version_num.linux-amd64.tar.gz"
 
-# To update prometheus, update the download URL and checksum below.
-# New versions can be found at https://prometheus.io/download/
-download_url="https://github.com/prometheus/prometheus/releases/download/v2.30.2/prometheus-2.30.2.linux-amd64.tar.gz"
-valid_hash="1f5c239f6fa8da511ae140eea8d3190c1a6e0093247d758d81c99d63684ae1e1  $download_output_file"
+archive_url="$download_url/$archive_name"
+shasum_url="$download_url/sha256sums.txt"
 
-# Download the Prometheus archive
-wget --quiet --output-document "$download_output_file" "$download_url"
+# Download the Prometheus archive and shasum file
+wget --quiet "$archive_url"
+wget --quiet "$shasum_url"
 
 # Compare sha256sum
-echo "$valid_hash" | sha256sum --check --quiet
+sha256sum --check --ignore-missing --status sha256sums.txt
 
 # Extract the archive to the current directory, preserving the existing prometheus.yml
-tar -xzf "$download_output_file" --strip-components 1 --skip-old-files
-rm "$download_output_file"
+tar -xzf "$archive_name" --strip-components 1 --skip-old-files
+rm "$archive_name" sha256sums.txt
