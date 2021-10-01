@@ -17,5 +17,5 @@ wget --quiet "$shasum_url"
 sha256sum --check --ignore-missing --status sha256sums.txt
 
 # Extract the archive to the current directory, preserving the existing prometheus.yml
-tar -xzf $archive_name --strip-components 1 --skip-old-files
+tar -xzf "$archive_name" --strip-components 1 --skip-old-files
 rm "$archive_name" sha256sums.txt
