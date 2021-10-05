@@ -9,14 +9,13 @@ on:
     - cron: '23 7 * * *'
   workflow_dispatch:
 jobs:
-  check-update:
+  prometheus:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
       - name: Check Version of Prometheus
         run: |
-          set -e
           current=$(grep -oP '(?<=version_num=").*(?=")' install_prometheus.sh)
           latest_json=$(curl -s -XGET https://api.github.com/repos/prometheus/prometheus/releases/latest)
           latest=$(echo $latest_json | jq .tag_name | grep -oP '(?<="v).*(?=")')
@@ -37,3 +36,32 @@ jobs:
           reviewers: |
             folksgl
             shumatepf
+
+  alertmanager:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check Version of Alertmanager
+        run: |
+          current=$(grep -oP '(?<=version_num=").*(?=")' install_alertmanager.sh)
+          latest_json=$(curl -s -XGET https://api.github.com/repos/prometheus/alertmanager/releases/latest)
+          latest=$(echo $latest_json | jq .tag_name | grep -oP '(?<="v).*(?=")')
+          html_url=$(echo $latest_json | jq .html_url | tr -d '"')
+          echo "CURRENT_VERSION=$current" >> $GITHUB_ENV
+          echo "LATEST_VERSION=$latest" >> $GITHUB_ENV
+          echo "HTML_URL=$html_url" >> $GITHUB_ENV
+          sed -i '5s/.*/version_num="'$latest'"/' install_alertmanager.sh
+        working-directory: ./alertmanager
+      
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v3.10.1
+        with:
+          title: Bump Alertmanager version from ${{ env.CURRENT_VERSION }} -> ${{ env.LATEST_VERSION }}
+          body: '[Alertmanager ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
+          commit-message: bump Alertmanager version to ${{ env.LATEST_VERSION }}
+          branch: bump-alertmanager-version
+          reviewers: |
+            folksgl
+            shumatepf
+            
