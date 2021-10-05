@@ -76,6 +76,7 @@ jobs:
           --var SLACK_URL=${{ secrets.SLACK_URL }}
           --memory 64MB
           --instances 2
+          --strategy rolling
         working-directory: ./alertmanager
 
       - name: Apply CF Network Policies
