@@ -17,31 +17,7 @@ on:
 
 jobs:
   check-config:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Generate config files
-        run: |
-          envsubst < prometheus/prometheus-config.yml > prometheus/prometheus.yml
-          envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
-        env:
-          # Use 'fake' environment variables since we're just checking syntax
-          ENVIRONMENT_NAME: dev
-          SLACK_URL: https://slack.com
-
-      - name: Validate Prometheus Config
-        run: |
-          ./install_prometheus.sh
-          ./promtool check config prometheus.yml
-          ./promtool check rules rules.yml
-        working-directory: ./prometheus
-
-      - name: Validate Alertmanager Config
-        run: |
-          ./install_alertmanager.sh
-          ./amtool check-config alertmanager.yml
-        working-directory: ./alertmanager
+    uses: 18F/identity-idva-monitoring/.github/workflows/check-config.yaml@main
 
   deploy:
     if: github.repository_owner == '18F'
