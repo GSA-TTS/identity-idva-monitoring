@@ -17,13 +17,7 @@ on:
 
 jobs:
   check-config:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
-
-      - name: Run config validation
-        uses: ./.github/actions/check-config
+    uses: 18F/identity-idva-monitoring/.github/workflows/check-config.yaml@main
 
   deploy:
     if: github.repository_owner == '18F'
