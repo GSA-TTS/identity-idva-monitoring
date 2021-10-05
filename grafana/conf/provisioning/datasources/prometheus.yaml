@@ -1,0 +1,12 @@
+---
+apiVersion: 1
+
+datasources:
+  - name: idva-monitoring-data
+    type: prometheus
+    access: proxy
+    url: https://identity-idva-monitoring-${ENVIRONMENT_NAME}.apps.internal:$PORT
+    isDefault: true
+    editable: false
+    jsonData:
+      tlsSkipVerify: true
