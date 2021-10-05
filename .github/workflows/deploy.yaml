@@ -62,15 +62,7 @@ jobs:
           ENVIRONMENT_NAME: ${{ steps.cf-setup.outputs.target-environment }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
 
-      # Deploy the main 'monitoring' prometheus application
-      - name: Deploy application
-        run: cf push --vars-file vars.yaml
-          --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
-          --strategy rolling
-        working-directory: ./prometheus
-
-      # Deploy the prometheus alertmanager
-      - name: Deploy alerts
+      - name: Deploy Alertmanager
         run: cf push
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
           --var SLACK_URL=${{ secrets.SLACK_URL }}
@@ -78,6 +70,12 @@ jobs:
           --instances 2
           --strategy rolling
         working-directory: ./alertmanager
+
+      - name: Deploy Prometheus
+        run: cf push --vars-file vars.yaml
+          --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+          --strategy rolling
+        working-directory: ./prometheus
 
       - name: Apply CF Network Policies
         run: |
