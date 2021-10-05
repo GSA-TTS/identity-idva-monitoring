@@ -1,7 +1,4 @@
 ---
-# This workflow will run unit tests and deploy the application to
-# a target environment
-
 name: Deploy
 
 on:
