@@ -11,6 +11,4 @@ applications:
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
       GRAFANA_PASS: ((GRAFANA_PASS))
-    processes:
-      - type: web
-        command: ./install_grafana.sh && ./bin/grafana-server web
+    command: ./install_grafana.sh && ./bin/grafana-server web
