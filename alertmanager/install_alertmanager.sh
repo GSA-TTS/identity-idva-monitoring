@@ -2,7 +2,7 @@
 set -e
 
 # To update alertmanager, simply update the version number below
-version_num="0.23.0"
+version_num=$(cat VERSION)
 download_url="https://github.com/prometheus/alertmanager/releases/download/v$version_num"
 archive_name="alertmanager-$version_num.linux-amd64.tar.gz"
 

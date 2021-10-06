@@ -16,14 +16,15 @@ jobs:
 
       - name: Check Version of Prometheus
         run: |
-          current=$(grep -oP '(?<=version_num=").*(?=")' install_prometheus.sh)
-          latest_json=$(curl -s -XGET https://api.github.com/repos/prometheus/prometheus/releases/latest)
-          latest=$(echo $latest_json | jq .tag_name | grep -oP '(?<="v).*(?=")')
+          current_version=$(cat VERSION)
+          latest_json=$(curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest)
+          latest_version=$(echo $latest_json | jq .tag_name | tr -d '"v')
           html_url=$(echo $latest_json | jq .html_url | tr -d '"')
-          echo "CURRENT_VERSION=$current" >> $GITHUB_ENV
-          echo "LATEST_VERSION=$latest" >> $GITHUB_ENV
+          echo -n $latest_version > VERSION
+
+          echo "CURRENT_VERSION=$current_version" >> $GITHUB_ENV
+          echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
           echo "HTML_URL=$html_url" >> $GITHUB_ENV
-          sed -i '5s/.*/version_num="'$latest'"/' install_prometheus.sh
         working-directory: ./prometheus
       
       - name: Create PR
@@ -44,14 +45,15 @@ jobs:
 
       - name: Check Version of Alertmanager
         run: |
-          current=$(grep -oP '(?<=version_num=").*(?=")' install_alertmanager.sh)
-          latest_json=$(curl -s -XGET https://api.github.com/repos/prometheus/alertmanager/releases/latest)
-          latest=$(echo $latest_json | jq .tag_name | grep -oP '(?<="v).*(?=")')
+          current_version=$(cat VERSION)
+          latest_json=$(curl -s https://api.github.com/repos/prometheus/alertmanager/releases/latest)
+          latest_version=$(echo $latest_json | jq .tag_name | tr -d '"v')
           html_url=$(echo $latest_json | jq .html_url | tr -d '"')
-          echo "CURRENT_VERSION=$current" >> $GITHUB_ENV
-          echo "LATEST_VERSION=$latest" >> $GITHUB_ENV
+          echo -n $latest_version > VERSION
+
+          echo "CURRENT_VERSION=$current_version" >> $GITHUB_ENV
+          echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
           echo "HTML_URL=$html_url" >> $GITHUB_ENV
-          sed -i '5s/.*/version_num="'$latest'"/' install_alertmanager.sh
         working-directory: ./alertmanager
       
       - name: Create PR
