@@ -53,10 +53,22 @@ jobs:
           --strategy rolling
         working-directory: ./prometheus
 
+      - name: Deploy Grafana
+        run: cf push
+          --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+          --var GRAFANA_PASS=${{ secrets.GRAFANA_PASS }}
+          --strategy rolling
+        working-directory: ./grafana
+
       - name: Apply CF Network Policies
         run: |
+          # Alertmanager gossip routes
           cf add-network-policy alerts alerts --protocol tcp --port 9094
           cf add-network-policy alerts alerts --protocol udp --port 9094
+          # Prometheus routes
           cf add-network-policy monitoring alerts
           cf add-network-policy monitoring cf-metrics
           cf add-network-policy monitoring api-gateway --port 8100 --protocol tcp
+          # Grafana routes
+          cf add-network-policy monitoring-dash monitoring
+          cf add-network-policy monitoring monitoring-dash
