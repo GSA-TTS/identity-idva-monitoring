@@ -1,0 +1,68 @@
+---
+# This workflow will run periodically to check for new releases of prometheus
+# and create pr to update the version when available
+
+name: Update
+
+on:
+  schedule:
+    - cron: '23 7 * * *'
+  workflow_dispatch:
+jobs:
+  prometheus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check Version of Prometheus
+        run: |
+          current_version=$(cat VERSION)
+          latest_json=$(curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest)
+          latest_version=$(echo "$latest_json" | jq .tag_name | tr -d '"v')
+          html_url=$(echo "$latest_json" | jq .html_url | tr -d '"')
+          echo -n "$latest_version" > VERSION
+
+          echo "CURRENT_VERSION=$current_version" >> $GITHUB_ENV
+          echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
+          echo "HTML_URL=$html_url" >> $GITHUB_ENV
+        working-directory: ./prometheus
+      
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v3.10.1
+        with:
+          title: Bump Prometheus version from ${{ env.CURRENT_VERSION }} -> ${{ env.LATEST_VERSION }}
+          body: '[Prometheus ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
+          commit-message: bump Prometheus version to ${{ env.LATEST_VERSION }}
+          branch: bump-prometheus-version
+          reviewers: |
+            folksgl
+            shumatepf
+
+  alertmanager:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check Version of Alertmanager
+        run: |
+          current_version=$(cat VERSION)
+          latest_json=$(curl -s https://api.github.com/repos/prometheus/alertmanager/releases/latest)
+          latest_version=$(echo "$latest_json" | jq .tag_name | tr -d '"v')
+          html_url=$(echo "$latest_json" | jq .html_url | tr -d '"')
+          echo -n "$latest_version" > VERSION
+
+          echo "CURRENT_VERSION=$current_version" >> $GITHUB_ENV
+          echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
+          echo "HTML_URL=$html_url" >> $GITHUB_ENV
+        working-directory: ./alertmanager
+      
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v3.10.1
+        with:
+          title: Bump Alertmanager version from ${{ env.CURRENT_VERSION }} -> ${{ env.LATEST_VERSION }}
+          body: '[Alertmanager ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
+          commit-message: bump Alertmanager version to ${{ env.LATEST_VERSION }}
+          branch: bump-alertmanager-version
+          reviewers: |
+            folksgl
+            shumatepf

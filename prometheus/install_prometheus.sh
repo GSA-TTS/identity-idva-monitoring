@@ -2,7 +2,7 @@
 set -e
 
 # To update Prometheus, simply update the version number below
-version_num="2.30.2"
+version_num=$(cat VERSION)
 download_url="https://github.com/prometheus/prometheus/releases/download/v$version_num"
 archive_name="prometheus-$version_num.linux-amd64.tar.gz"
 
