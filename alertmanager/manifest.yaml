@@ -1,8 +1,8 @@
 ---
 applications:
-  - name: alerts
+  - name: alertmanager
     routes:
-      - route: identity-idva-monitoring-alerts-((ENVIRONMENT_NAME)).apps.internal
+      - route: identity-idva-monitoring-alertmanager-((ENVIRONMENT_NAME)).apps.internal
     memory: 64MB
     instances: 2
     buildpacks:
@@ -10,7 +10,7 @@ applications:
     command: |
       ./install_alertmanager.sh && \
       ./create_web_config.sh && \
-      ./alertmanager --web.listen-address="0.0.0.0:$PORT" --cluster.peer="identity-idva-monitoring-alerts-((ENVIRONMENT_NAME)).apps.internal:9094" --web.config.file=web-config.yml
+      ./alertmanager --web.listen-address="0.0.0.0:$PORT" --cluster.peer="identity-idva-monitoring-alertmanager-((ENVIRONMENT_NAME)).apps.internal:9094" --web.config.file=web-config.yml
     env:
       SLACK_URL: ((SLACK_URL))
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))

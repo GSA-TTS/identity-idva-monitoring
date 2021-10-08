@@ -1,8 +1,8 @@
 ---
 applications:
-  - name: monitoring
+  - name: prometheus
     routes:
-      - route: identity-idva-monitoring-((ENVIRONMENT_NAME)).apps.internal
+      - route: identity-idva-monitoring-prometheus-((ENVIRONMENT_NAME)).apps.internal
     memory: ((MEMORY))
     instances: ((INSTANCES))
     buildpacks:
