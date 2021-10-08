@@ -1,13 +1,13 @@
 ---
 applications:
-  - name: monitoring-dash
+  - name: grafana
     stack: cflinuxfs3
     instances: 1
     memory: 256MB
     buildpacks:
       - https://github.com/cloudfoundry/binary-buildpack
     routes:
-      - route: identity-idva-monitoring-dash-((ENVIRONMENT_NAME)).apps.internal
+      - route: identity-idva-monitoring-grafana-((ENVIRONMENT_NAME)).apps.internal
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
       GRAFANA_PASS: ((GRAFANA_PASS))

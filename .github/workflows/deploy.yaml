@@ -63,12 +63,12 @@ jobs:
       - name: Apply CF Network Policies
         run: |
           # Alertmanager gossip routes
-          cf add-network-policy alerts alerts --protocol tcp --port 9094
-          cf add-network-policy alerts alerts --protocol udp --port 9094
+          cf add-network-policy alertmanager alertmanager --protocol tcp --port 9094
+          cf add-network-policy alertmanager alertmanager --protocol udp --port 9094
           # Prometheus routes
-          cf add-network-policy monitoring alerts
-          cf add-network-policy monitoring cf-metrics
-          cf add-network-policy monitoring api-gateway --port 8100 --protocol tcp
+          cf add-network-policy prometheus alertmanager
+          cf add-network-policy prometheus cf-metrics
+          cf add-network-policy prometheus api-gateway --port 8100 --protocol tcp
           # Grafana routes
-          cf add-network-policy monitoring-dash monitoring
-          cf add-network-policy monitoring monitoring-dash
+          cf add-network-policy grafana prometheus
+          cf add-network-policy prometheus grafana
