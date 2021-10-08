@@ -13,20 +13,26 @@ The most up-to-date information about the CI/CD flows for this repo can be found
 [GitHub workflows directory](https://github.com/18F/identity-idva-monitoring/tree/main/.github/workflows)
 
 ## Implementation
-IDVA monitoring is a Prometheus server deployed to Cloud.gov and configured to monitor
-applications based on DNS querying of the application routes. For all applications we
-wish to monitor, adding a `dns_sd_config` for within the [prometheus-config.yml](#prometheus-config.yml)
-adds the application to prometheus's monitoring. By using the `dns_sd_config` we are
-able to see and query **all** instances of the application, and are not load balanced to
-random instances every query.
+IDVA monitoring is a set of monitoring tools that get deployed together to enable
+monitoring of the IDVA system. The repo is broken down by tool and contains:
+* Prometheus: an HA Prometheus setup to monitor applications based on DNS querying
+of the application routes. 
+  * For all applications we wish to monitor, adding a `dns_sd_config` within the
+  [prometheus-config.yml](#prometheus-config.yml) adds the application to prometheus's
+  monitoring. By using the `dns_sd_config` we are able to see and query **all** instances
+  of the application, and are not load balanced to random instances every query.
+* Grafana: a simple dashboard setup to view some of the IDVA metrics in real-time
+* Alertmanager: an HA Alertmanager cluster that handles alert deduplication and
+routing.
 
-## Generating the config file
-The config file is generic to prevent having to have multiple configuration files
-per space (dev, test, prod, etc). The [prometheus-config.yml](#prometheus-config.yml)
-file is intended to be fed to `envsubst` after the appropriate environment variable
-has been set. The config should be output to `prometheus.yml`.
+## Generating the config files
+The config files are generic to prevent having to have multiple configuration files
+per space (dev, test, prod, etc). The <tool-name>-config.yml files are intended to be
+fed to `envsubst` after the appropriate environment variable has been set. The config
+should be output to the appropriate named files (see examples below).
 ```shell
-envsubst < prometheus-config.yml > prometheus.yml
+envsubst < prometheus/prometheus-config.yml > prometheus/prometheus.yml
+envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
 ```
 
 ## Public domain
