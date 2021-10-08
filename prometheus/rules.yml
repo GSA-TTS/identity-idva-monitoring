@@ -85,7 +85,7 @@ groups:
         # Gives the percentage of requests that are being responded to within
         # 400ms. If this goes below 95%, sound the alarms.
         expr: >-
-          sum(rate(kong_latency_bucket{le="00400.0", type="request"}[5m]))
+          sum(rate(kong_latency_bucket{le="01000.0", type="request"}[5m]))
           by (service)
           /
           sum(rate(kong_latency_count{type="request"}[5m])) by (service) < 0.95
@@ -93,7 +93,7 @@ groups:
           summary: The {{ $labels.service }} app is experiencing high latency.
           description: >-
             More than 5% of requests to {{ $labels.service }} are taking longer
-            than 400ms to complete.
+            than 1000ms to complete.
 
   - name: AppCrashAlerts
     rules:
