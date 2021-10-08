@@ -6,7 +6,7 @@ alerting:
   alertmanagers:
     - dns_sd_configs:
         - names:
-            - 'identity-idva-monitoring-alerts-${ENVIRONMENT_NAME}.apps.internal'
+            - 'identity-idva-monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal'
           type: 'A'
           port: 8080
       tls_config:
@@ -48,10 +48,10 @@ scrape_configs:
     tls_config:
       insecure_skip_verify: true
 
-  - job_name: 'dns-discovery-monitoring-dash'
+  - job_name: 'dns-discovery-grafana'
     dns_sd_configs:
       - names:
-          - 'identity-idva-monitoring-dash-${ENVIRONMENT_NAME}.apps.internal'
+          - 'identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal'
         type: 'A'
         port: 8080
     scheme: https
