@@ -5,7 +5,7 @@ datasources:
   - name: idva-monitoring-data
     type: prometheus
     access: proxy
-    url: https://identity-idva-monitoring-${ENVIRONMENT_NAME}.apps.internal:$PORT
+    url: https://identity-idva-monitoring-prometheus-${ENVIRONMENT_NAME}.apps.internal:$PORT
     isDefault: true
     editable: false
     jsonData:
