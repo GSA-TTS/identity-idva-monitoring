@@ -68,6 +68,7 @@ jobs:
           # Prometheus routes
           cf add-network-policy prometheus alertmanager
           cf add-network-policy prometheus cf-metrics
+          cf add-network-policy prometheus redis-metrics
           cf add-network-policy prometheus kong --port 8100 --protocol tcp
           # Grafana routes
           cf add-network-policy grafana prometheus

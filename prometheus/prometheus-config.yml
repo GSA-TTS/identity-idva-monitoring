@@ -57,3 +57,11 @@ scrape_configs:
     scheme: https
     tls_config:
       insecure_skip_verify: true
+
+  - job_name: redis_exporter
+    static_configs:
+      - targets: 
+          - 'identity-idva-metrics-redis-${ENVIRONMENT_NAME}.apps.internal:8080'
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
