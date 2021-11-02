@@ -30,25 +30,6 @@ groups:
           description: >-
             Disk usage has exceeded 80% for at least 5 consecutive minutes.
 
-      # No utilization alerts
-      - alert: No CPU utilization
-        expr: avg by (app) (avg_over_time(cpu[5m])) == 0
-        annotations:
-          summary: Zero CPU usage for {{ $labels.app }}.
-          description: 0% CPU usage likely means the app is not running.
-
-      - alert: No memory utilization
-        expr: avg by (app) (avg_over_time(memory_utilization[5m])) == 0
-        annotations:
-          summary: Zero memory usage for {{ $labels.app }}.
-          description: 0% memory usage likely means the app is not running.
-
-      - alert: No disk utilization
-        expr: avg by (app) (avg_over_time(disk_utilization[5m])) == 0
-        annotations:
-          summary: Zero disk usage for {{ $labels.app }}.
-          description: 0% disk usage likely means the app is not running.
-
   - name: HTTPResponseAlerts
     rules:
       # Unauthorized responses 401 + 403
