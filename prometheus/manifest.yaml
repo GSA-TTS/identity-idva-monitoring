@@ -9,6 +9,7 @@ applications:
       - https://github.com/cloudfoundry/apt-buildpack
       - binary_buildpack
     command: |
+      envsubst < prometheus-config.yml > prometheus.yml
       ./install_prometheus.sh && \
       ./create_web_config.sh && \
       ./prometheus --web.listen-address="0.0.0.0:$PORT" --storage.tsdb.retention.size="950MB" --web.config.file=web-config.yml
