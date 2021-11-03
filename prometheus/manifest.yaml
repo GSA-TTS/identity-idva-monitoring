@@ -6,6 +6,7 @@ applications:
     memory: ((MEMORY))
     instances: ((INSTANCES))
     buildpacks:
+      - https://github.com/cloudfoundry/apt-buildpack
       - binary_buildpack
     command: |
       ./install_prometheus.sh && \
