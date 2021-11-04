@@ -20,11 +20,109 @@
   },
   "description": "Live views into the hardware utilization for the IDVA system.",
   "editable": true,
+  "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 2,
   "links": [],
+  "liveNow": false,
   "panels": [
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9,
+      "panels": [],
+      "title": "CF App Status",
+      "type": "row"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 1
+              },
+              {
+                "color": "orange",
+                "value": 2
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 11,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.2.1",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum by (app) (irate(crash[5m]) * 60)",
+          "interval": "",
+          "legendFormat": "{{app}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CF App Crash History",
+      "type": "status-history"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 7,
+      "panels": [],
+      "title": "Hardware Metrics",
+      "type": "row"
+    },
     {
       "datasource": null,
       "fieldConfig": {
@@ -84,7 +182,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 18
       },
       "id": 2,
       "options": {
@@ -102,7 +200,7 @@
           "exemplar": true,
           "expr": "avg by (app) (\n  avg_over_time(cpu[5m])\n)",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{app}}",
           "refId": "A"
         }
       ],
@@ -168,7 +266,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 18
       },
       "id": 5,
       "options": {
@@ -186,7 +284,7 @@
           "exemplar": true,
           "expr": "cpu",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{app}} instance {{exported_instance}}",
           "refId": "A"
         }
       ],
@@ -252,7 +350,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 10
+        "y": 28
       },
       "id": 3,
       "options": {
@@ -270,7 +368,7 @@
           "exemplar": true,
           "expr": "avg by (app) (\n  avg_over_time(memory_utilization[5m])\n)",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{app}}",
           "refId": "A"
         }
       ],
@@ -336,7 +434,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 10
+        "y": 28
       },
       "id": 4,
       "options": {
@@ -354,7 +452,7 @@
           "exemplar": true,
           "expr": "avg by (app) (\n  avg_over_time(disk_utilization[5m])\n)",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{app}}",
           "refId": "A"
         }
       ],
@@ -363,7 +461,7 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -375,7 +473,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Hardware Metrics",
+  "title": "IDVA CF System Metrics",
   "uid": "-H2wahVnz",
-  "version": 5
+  "version": 1
 }
