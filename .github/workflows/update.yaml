@@ -28,7 +28,7 @@ jobs:
         working-directory: ./prometheus
       
       - name: Create PR
-        uses: peter-evans/create-pull-request@v3.10.1
+        uses: peter-evans/create-pull-request@v3.11.0
         with:
           title: Bump Prometheus version from ${{ env.CURRENT_VERSION }} -> ${{ env.LATEST_VERSION }}
           body: '[Prometheus ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
@@ -57,7 +57,7 @@ jobs:
         working-directory: ./alertmanager
       
       - name: Create PR
-        uses: peter-evans/create-pull-request@v3.10.1
+        uses: peter-evans/create-pull-request@v3.11.0
         with:
           title: Bump Alertmanager version from ${{ env.CURRENT_VERSION }} -> ${{ env.LATEST_VERSION }}
           body: '[Alertmanager ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
