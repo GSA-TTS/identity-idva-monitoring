@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # To update Cortex, simply update the version number below
-version_num="1.10.0"
+version_num=$(cat VERSION)
 download_url="https://github.com/cortexproject/cortex/releases/download/v$version_num/"
 archive_name="cortex-linux-amd64"
 
