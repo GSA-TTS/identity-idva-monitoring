@@ -41,6 +41,7 @@ jobs:
         run: cf push --vars-file vars.yaml
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
           --strategy rolling
+        working-directory: ./cortex
 
       - name: Deploy Alertmanager
         run: cf push
