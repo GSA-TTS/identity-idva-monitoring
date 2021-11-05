@@ -36,8 +36,7 @@ jobs:
           commit-message: bump Prometheus version to ${{ env.LATEST_VERSION }}
           branch: bump-prometheus-version
           reviewers: |
-            folksgl
-            shumatepf
+            18f/idva-partners
 
   alertmanager:
     if: github.repository_owner == '18F'
@@ -66,5 +65,4 @@ jobs:
           commit-message: bump Alertmanager version to ${{ env.LATEST_VERSION }}
           branch: bump-alertmanager-version
           reviewers: |
-            folksgl
-            shumatepf
+            18f/idva-partners
