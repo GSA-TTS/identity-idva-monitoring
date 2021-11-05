@@ -63,15 +63,20 @@ scrape_configs:
     tls_config:
       insecure_skip_verify: true
 
-  - job_name: redis_exporter
-    static_configs:
-      - targets: 
-          - 'identity-idva-metrics-redis-${ENVIRONMENT_NAME}.apps.internal:8080'
+  - job_name: 'dns-redis-exporter'
+    dns_sd_configs:
+      - names:
+          - 'identity-idva-metrics-redis-${ENVIRONMENT_NAME}.apps.internal'
+        type: 'A'
+        port: 8080
     scheme: https
     tls_config:
       insecure_skip_verify: true
 
-  - job_name: elasticsearch_exporter
-    static_configs:
-      - targets: 
-          - 'identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal:8080'
+  - job_name: 'dns-elasticsearch-exporter'
+    dns_sd_configs:
+      - names:
+          - 'identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal'
+        type: 'A'
+        port: 8080
+    scheme: http
