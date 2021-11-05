@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# To update Prometheus, simply update the version number below
+# To update Cortex, simply update the version number below
 version_num="1.10.0"
 download_url="https://github.com/cortexproject/cortex/releases/download/v$version_num/"
 archive_name="cortex-linux-amd64"
