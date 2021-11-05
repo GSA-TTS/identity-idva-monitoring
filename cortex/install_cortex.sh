@@ -1,5 +1,4 @@
-#!/bin/bash
-set -e
+#!/bin/bash -e
 
 # To update Cortex, simply update the version number below
 version_num="1.10.0"
