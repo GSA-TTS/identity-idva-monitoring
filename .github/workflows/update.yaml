@@ -10,6 +10,7 @@ on:
   workflow_dispatch:
 jobs:
   prometheus:
+    if: github.repository_owner == '18F'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -26,7 +27,7 @@ jobs:
           echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
           echo "HTML_URL=$html_url" >> $GITHUB_ENV
         working-directory: ./prometheus
-      
+
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.11.0
         with:
@@ -39,6 +40,7 @@ jobs:
             shumatepf
 
   alertmanager:
+    if: github.repository_owner == '18F'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -55,7 +57,7 @@ jobs:
           echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
           echo "HTML_URL=$html_url" >> $GITHUB_ENV
         working-directory: ./alertmanager
-      
+
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.11.0
         with:
