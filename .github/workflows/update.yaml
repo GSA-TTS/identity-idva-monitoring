@@ -18,8 +18,8 @@ jobs:
         run: |
           current_version=$(cat VERSION)
           latest_json=$(curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest)
-          latest_version=$(echo "$latest_json" | jq .tag_name | tr -d '"v')
-          html_url=$(echo "$latest_json" | jq .html_url | tr -d '"')
+          latest_version=$(echo "$latest_json" | jq -r .tag_name | tr -d 'v')
+          html_url=$(echo "$latest_json" | jq -r .html_url)
           echo -n "$latest_version" > VERSION
 
           echo "CURRENT_VERSION=$current_version" >> $GITHUB_ENV
@@ -47,8 +47,8 @@ jobs:
         run: |
           current_version=$(cat VERSION)
           latest_json=$(curl -s https://api.github.com/repos/prometheus/alertmanager/releases/latest)
-          latest_version=$(echo "$latest_json" | jq .tag_name | tr -d '"v')
-          html_url=$(echo "$latest_json" | jq .html_url | tr -d '"')
+          latest_version=$(echo "$latest_json" | jq -r .tag_name | tr -d 'v')
+          html_url=$(echo "$latest_json" | jq -r .html_url)
           echo -n "$latest_version" > VERSION
 
           echo "CURRENT_VERSION=$current_version" >> $GITHUB_ENV
