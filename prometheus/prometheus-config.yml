@@ -70,3 +70,8 @@ scrape_configs:
     scheme: https
     tls_config:
       insecure_skip_verify: true
+
+  - job_name: elasticsearch_exporter
+    static_configs:
+      - targets: 
+          - 'identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal:8080'
