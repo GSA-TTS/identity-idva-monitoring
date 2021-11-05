@@ -1,0 +1,7 @@
+---
+keys:
+  - https://artifacts.elastic.co/GPG-KEY-elasticsearch
+repos:
+  - deb https://artifacts.elastic.co/packages/oss-7.x/apt stable main
+packages:
+  - kibana-oss=7.4.2

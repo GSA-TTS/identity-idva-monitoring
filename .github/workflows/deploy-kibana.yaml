@@ -1,0 +1,37 @@
+---
+name: Deploy Kibana
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - 'kibana/**'
+      - '.github/workflows/deploy-kibana.yaml'
+  release:
+    types: [released]
+
+jobs:
+  deploy:
+    if: github.repository_owner == '18F'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: 18F/identity-idva-cf-setup@v2
+        id: cf-setup
+        with:
+          cf-username: ${{ secrets.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+          cf-org: ${{ secrets.CF_ORG }}
+
+      - name: Deploy Kibana
+        run: cf push --vars-file vars.yaml
+          --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+          --strategy rolling
+        working-directory: ./kibana
+
+      - name: Apply CF Network Policies
+        run: cf add-network-policy kibana es-proxy
