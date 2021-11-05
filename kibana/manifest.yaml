@@ -1,0 +1,15 @@
+---
+applications:
+  - name: kibana
+    no-route: true
+    health-check-type: process
+    memory: ((MEMORY))
+    disk_quota: 4GB
+    instances: ((INSTANCES))
+    buildpacks:
+      - https://github.com/cloudfoundry/apt-buildpack
+      - binary_buildpack
+    command: |
+      /home/vcap/deps/0/apt/usr/share/kibana/bin/kibana --config config/kibana.yml
+    env:
+      ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
