@@ -12,6 +12,7 @@ applications:
     command: |
       ./install_cortex.sh
       export BUCKET_NAME=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.bucket')
+      export BUCKET_ENDPOINT=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.fips_endpoint')
       export AWS_REGION=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.region')
       export ACCESS_KEY_ID=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.access_key_id')
       export SECRET_ACCESS_KEY=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.secret_access_key')

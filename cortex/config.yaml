@@ -63,7 +63,7 @@ blocks_storage:
   backend: s3  # s3, gcs, azure or filesystem are valid options
   s3:
     bucket_name: ${BUCKET_NAME}
-    endpoint: s3-fips.us-gov-west-1.amazonaws.com
+    endpoint: ${BUCKET_ENDPOINT}
     region: ${AWS_REGION}
     # Configure your S3 credentials below.
     secret_access_key: ${SECRET_ACCESS_KEY}
