@@ -1,0 +1,18 @@
+---
+applications:
+  - name: cortex
+    routes:
+      - route: identity-idva-cortex-((ENVIRONMENT_NAME)).apps.internal
+    memory: ((MEMORY))
+    instances: ((INSTANCES))
+    buildpacks:
+      - binary_buildpack
+    services:
+      - prometheus-storage
+    command: |
+      ./install_cortex.sh
+      export BUCKET_NAME=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.bucket')
+      export AWS_REGION=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.region')
+      export ACCESS_KEY_ID=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.access_key_id')
+      export SECRET_ACCESS_KEY=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.secret_access_key')
+      ./cortex-linux-amd64 -config.file=config.yaml -config.expand-env
