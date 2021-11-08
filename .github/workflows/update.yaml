@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Check Version of Alertmanager
+      - name: Check Version of Cortex
         run: |
           current_version=$(cat VERSION)
           latest_json=$(curl -s https://api.github.com/repos/cortexproject/cortex/releases/latest)
