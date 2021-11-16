@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Check Version of Prometheus
-        run: ./version_updater ./prometheus/VERSION https://api.github.com/repos/prometheus/prometheus/releases/latest
+        run: ./version_updater.sh ./prometheus/VERSION https://api.github.com/repos/prometheus/prometheus/releases/latest
 
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.11.0
@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Check Version of Alertmanager
-        run: ./version_updater ./alertmanager/VERSION https://api.github.com/repos/prometheus/alertmanager/releases/latest
+        run: ./version_updater.sh ./alertmanager/VERSION https://api.github.com/repos/prometheus/alertmanager/releases/latest
 
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.11.0
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Check Version of Cortex
-        run: ./version_updater ./cortex/VERSION https://api.github.com/repos/cortexproject/cortex/releases/latest
+        run: ./version_updater.sh ./cortex/VERSION https://api.github.com/repos/cortexproject/cortex/releases/latest
 
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.11.0
