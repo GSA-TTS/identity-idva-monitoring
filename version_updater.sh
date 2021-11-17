@@ -38,7 +38,7 @@ latest_version=$(echo "$latest_json" | jq -r .tag_name | tr -d 'v')
 echo "Latest version available: $latest_version"
 
 html_url=$(echo "$latest_json" | jq -r .html_url)
-echo -n "$latest_version" > VERSION
+echo -n "$latest_version" > "$1"
 
 {
   echo "CURRENT_VERSION=$current_version"
