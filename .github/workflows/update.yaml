@@ -18,12 +18,21 @@ jobs:
       - name: Check Version of Prometheus
         run: ./version_updater.sh ./prometheus/VERSION https://api.github.com/repos/prometheus/prometheus/releases/latest
 
+      - uses: crazy-max/ghaction-import-gpg@v4.1.0
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.11.0
         with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           title: Bump Prometheus version from ${{ env.CURRENT_VERSION }} -> ${{ env.LATEST_VERSION }}
           body: '[Prometheus ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
           commit-message: Bump Prometheus version to ${{ env.LATEST_VERSION }}
+          committer: idva-bot <idva@gsa.gov>
           branch: bump-prometheus-version
           reviewers: |
             18f/idva-partners
@@ -37,12 +46,21 @@ jobs:
       - name: Check Version of Alertmanager
         run: ./version_updater.sh ./alertmanager/VERSION https://api.github.com/repos/prometheus/alertmanager/releases/latest
 
+      - uses: crazy-max/ghaction-import-gpg@v4.1.0
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.11.0
         with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           title: Bump Alertmanager version from ${{ env.CURRENT_VERSION }} -> ${{ env.LATEST_VERSION }}
           body: '[Alertmanager ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
           commit-message: Bump Alertmanager version to ${{ env.LATEST_VERSION }}
+          committer: idva-bot <idva@gsa.gov>
           branch: bump-alertmanager-version
           reviewers: |
             18f/idva-partners
@@ -56,12 +74,21 @@ jobs:
       - name: Check Version of Cortex
         run: ./version_updater.sh ./cortex/VERSION https://api.github.com/repos/cortexproject/cortex/releases/latest
 
+      - uses: crazy-max/ghaction-import-gpg@v4.1.0
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.11.0
         with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           title: Bump Cortex version from ${{ env.CURRENT_VERSION }} -> ${{ env.LATEST_VERSION }}
           body: '[Cortex ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
           commit-message: Bump Cortex version to ${{ env.LATEST_VERSION }}
+          committer: idva-bot <idva@gsa.gov>
           branch: bump-cortex-version
           reviewers: |
             18f/idva-partners
