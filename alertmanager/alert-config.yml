@@ -12,7 +12,7 @@ receivers:
     slack_configs:
       - channel: '#idva-alerts'
         title: |-
-          {{ "${ENVIRONMENT_NAME}" | toUpper }} - {{ .CommonLabels.app }} - {{ .CommonLabels.alertname }}  {{ .CommonAnnotations.icon }}
+          {{ "${ENVIRONMENT_NAME}" | toUpper }} – {{ .CommonLabels.app }} – {{ .CommonLabels.alertname }}  {{ .CommonAnnotations.icon }}
         color: |-
           {{ if eq "${ENVIRONMENT_NAME}" "prod" }}#ff0000{{ else if eq "${ENVIRONMENT_NAME}" "test" }}#0000ff{{ else }}#000000{{ end }}
         text: |
