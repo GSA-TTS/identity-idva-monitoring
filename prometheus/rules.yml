@@ -11,6 +11,7 @@ groups:
             {{ $labels.app }}.
           description: >-
             CPU load has exceeded 80% for at least 5 consecutive minutes.
+          icon: 🖥️
 
       - alert: High memory utilization
         expr: avg by (app) (avg_over_time(memory_utilization[5m])) > 80
@@ -20,6 +21,7 @@ groups:
             {{ $labels.app }}.
           description: >-
             Memory usage has exceeded 80% for at least 5 consecutive minutes.
+          icon: 💾
 
       - alert: High disk utilization
         expr: avg by (app) (avg_over_time(disk_utilization[5m])) > 80
@@ -29,6 +31,7 @@ groups:
             {{ $labels.app }}.
           description: >-
             Disk usage has exceeded 80% for at least 5 consecutive minutes.
+          icon: 📁
 
       # No utilization alerts
       - alert: No CPU utilization
@@ -59,6 +62,7 @@ groups:
           description: >-
             Over the last minute, the rate of unauthorized (401 or 403)
             responses was {{ $value | printf "%.2f"}}/second.
+          icon: ⛔
 
       # 5XX error responses
       - alert: Server Errors
@@ -70,6 +74,7 @@ groups:
           description: >-
             The {{ $labels.app }} service may be experiencing issues and has
             returned at least 1 5XX response in the last 5 minutes.
+          icon: ❌
 
   - name: ResponseTimeAlerts
     rules:
@@ -94,6 +99,7 @@ groups:
           description: >-
             More than 5% of requests to {{ $labels.service }} are taking longer
             than 1000ms to complete.
+          icon: 🐢
 
   - name: AppCrashAlerts
     rules:
@@ -104,3 +110,4 @@ groups:
           description: >-
             Within the last 5 minutes, the {{ $labels.app }} has crashed at
             least once.
+          icon: 🔥
