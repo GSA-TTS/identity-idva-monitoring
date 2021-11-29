@@ -18,15 +18,20 @@ jobs:
   check-config:
     uses: 18F/identity-idva-monitoring/.github/workflows/check-config.yaml@main
 
-  checkout-and-setup-cf:
-    uses: 18F/identity-idva-monitoring/.github/workflows/checkout-and-setup-cf.yaml@main
-    needs: check-config
-
   deploy:
     if: github.repository_owner == '18F'
     runs-on: ubuntu-latest
-    needs: checkout-and-setup-cf
+    needs: check-config
     steps:
+      - uses: actions/checkout@v2
+
+      - uses: 18F/identity-idva-cf-setup@v2
+        id: cf-setup
+        with:
+          cf-username: ${{ secrets.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+          cf-org: ${{ secrets.CF_ORG }}
+
       - name: Generate config files
         run: |
           envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
