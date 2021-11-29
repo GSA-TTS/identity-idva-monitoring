@@ -1,0 +1,49 @@
+---
+name: Deploy Alertmanager
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - 'alertmanager/**'
+      - '.github/workflows/deploy-alertmanager.yaml'
+      - '!**.md'  # Ignore all markdown files in the repository
+  release:
+    types: [released]
+
+jobs:
+  check-config:
+    uses: 18F/identity-idva-monitoring/.github/workflows/check-config.yaml@main
+
+  checkout-and-setup-cf:
+    uses: 18F/identity-idva-monitoring/.github/workflows/checkout-and-setup-cf.yaml@main
+    needs: check-config
+
+  deploy:
+    if: github.repository_owner == '18F'
+    runs-on: ubuntu-latest
+    needs: checkout-and-setup-cf
+    steps:
+      - name: Generate config files
+        run: |
+          envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
+        env:
+          ENVIRONMENT_NAME: ${{ steps.cf-setup.outputs.target-environment }}
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+
+      - name: Deploy Alertmanager
+        run: cf push
+          --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+          --var SLACK_URL=${{ secrets.SLACK_URL }}
+          --memory 64MB
+          --instances 2
+          --strategy rolling
+        working-directory: ./alertmanager
+
+      - name: Apply CF Network Policies
+        run: |
+          cf add-network-policy alertmanager alertmanager --protocol tcp --port 9094
+          cf add-network-policy alertmanager alertmanager --protocol udp --port 9094

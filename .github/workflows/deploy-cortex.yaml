@@ -1,5 +1,5 @@
 ---
-name: Deploy Kibana
+name: Deploy Cortex
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
     tags:
       - '*'
     paths:
-      - 'kibana/**'
-      - '.github/workflows/deploy-kibana.yaml'
+      - 'cortex/**'
+      - '.github/workflows/deploy-cortex.yaml'
       - '!**.md'  # Ignore all markdown files in the repository
   release:
     types: [released]
@@ -23,11 +23,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: checkout-and-setup-cf
     steps:
-      - name: Deploy Kibana
+      - name: Deploy Cortex
         run: cf push --vars-file vars.yaml
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
           --strategy rolling
-        working-directory: ./kibana
+        working-directory: ./cortex
 
       - name: Apply CF Network Policies
-        run: cf add-network-policy kibana es-proxy
+        run: |
+          cf add-network-policy prometheus cortex
+          cf add-network-policy grafana cortex

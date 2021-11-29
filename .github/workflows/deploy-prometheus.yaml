@@ -1,0 +1,42 @@
+---
+name: Deploy Prometheus
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - 'prometheus/**'
+      - '.github/workflows/deploy-prometheus.yaml'
+      - '!**.md'  # Ignore all markdown files in the repository
+  release:
+    types: [released]
+
+jobs:
+  check-config:
+    uses: 18F/identity-idva-monitoring/.github/workflows/check-config.yaml@main
+
+  checkout-and-setup-cf:
+    uses: 18F/identity-idva-monitoring/.github/workflows/checkout-and-setup-cf.yaml@main
+    needs: check-config
+
+  deploy:
+    if: github.repository_owner == '18F'
+    runs-on: ubuntu-latest
+    needs: checkout-and-setup-cf
+    steps:
+      - name: Deploy Prometheus
+        run: cf push --vars-file vars.yaml
+          --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+          --strategy rolling
+        working-directory: ./prometheus
+
+      - name: Apply CF Network Policies
+        run: |
+          cf add-network-policy prometheus alertmanager
+          cf add-network-policy prometheus cf-metrics
+          cf add-network-policy prometheus redis-metrics
+          cf add-network-policy prometheus elasticsearch-metrics
+          cf add-network-policy prometheus kong --port 8100 --protocol tcp
