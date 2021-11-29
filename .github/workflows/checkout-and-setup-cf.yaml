@@ -1,0 +1,19 @@
+---
+name: Checkout Repo and Setup CF CLI
+
+on:
+  workflow_call:
+
+jobs:
+  checkout_and_setup:
+    name: Checkout and Setup CF CLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: 18F/identity-idva-cf-setup@v2
+        id: cf-setup
+        with:
+          cf-username: ${{ secrets.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+          cf-org: ${{ secrets.CF_ORG }}

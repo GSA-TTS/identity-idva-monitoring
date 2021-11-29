@@ -1,5 +1,5 @@
 ---
-name: Deploy Kibana
+name: Deploy Grafana
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
     tags:
       - '*'
     paths:
-      - 'kibana/**'
-      - '.github/workflows/deploy-kibana.yaml'
+      - 'grafana/**'
+      - '.github/workflows/deploy-grafana.yaml'
       - '!**.md'  # Ignore all markdown files in the repository
   release:
     types: [released]
@@ -23,11 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: checkout-and-setup-cf
     steps:
-      - name: Deploy Kibana
-        run: cf push --vars-file vars.yaml
+      - name: Deploy Grafana
+        run: cf push
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+          --var GRAFANA_PASS=${{ secrets.GRAFANA_PASS }}
           --strategy rolling
-        working-directory: ./kibana
+        working-directory: ./grafana
 
       - name: Apply CF Network Policies
-        run: cf add-network-policy kibana es-proxy
+        run: |
+          cf add-network-policy grafana prometheus
+          cf add-network-policy prometheus grafana
