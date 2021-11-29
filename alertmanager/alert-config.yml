@@ -2,7 +2,7 @@
 global:
   slack_api_url: ${SLACK_URL}
 route:
-  group_by: ['alertname']
+  group_by: ['...']
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 1h
@@ -11,10 +11,13 @@ receivers:
   - name: 'web.hook'
     slack_configs:
       - channel: '#idva-alerts'
+        title: |-
+          {{ "${ENVIRONMENT_NAME}" | toUpper }} – {{ .CommonLabels.app }} – {{ .CommonLabels.alertname }}  {{ .CommonAnnotations.icon }}
+        color: |-
+          {{ if eq "${ENVIRONMENT_NAME}" "prod" }}#ff0000{{ else if eq "${ENVIRONMENT_NAME}" "test" }}#0000ff{{ else }}#000000{{ end }}
         text: |
-          Environment: ${ENVIRONMENT_NAME}
           Summary: {{ .CommonAnnotations.summary }}
-          Description: {{ .CommonAnnotations.description }}
+          {{ .CommonAnnotations.description }}
 inhibit_rules:
   - source_match:
       severity: 'critical'
