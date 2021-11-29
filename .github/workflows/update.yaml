@@ -92,3 +92,22 @@ jobs:
           branch: bump-cortex-version
           reviewers: |
             18f/idva-partners
+
+  grafana:
+    if: github.repository_owner == '18F'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check Version of Grafana
+        run: ./version_updater.sh ./grafana/VERSION https://api.github.com/repos/grafana/grafana/releases/latest
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v3.11.0
+        with:
+          title: Bump Grafana version from ${{ env.CURRENT_VERSION }} -> ${{ env.LATEST_VERSION }}
+          body: '[Grafana ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
+          commit-message: Bump Grafana version to ${{ env.LATEST_VERSION }}
+          branch: bump-grafana-version
+          reviewers: |
+            18f/idva-partners
