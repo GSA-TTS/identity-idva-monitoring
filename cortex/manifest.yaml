@@ -2,7 +2,7 @@
 applications:
   - name: cortex
     routes:
-      - route: identity-idva-cortex-((ENVIRONMENT_NAME)).apps.internal
+      - route: identity-idva-monitoring-cortex-((ENVIRONMENT_NAME)).apps.internal
     memory: ((MEMORY))
     instances: ((INSTANCES))
     buildpacks:
