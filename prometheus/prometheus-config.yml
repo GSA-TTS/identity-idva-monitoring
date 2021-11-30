@@ -27,7 +27,7 @@ rule_files:
   - "rules.yml"
 
 remote_write:
-  - url: https://identity-idva-cortex-${ENVIRONMENT_NAME}.apps.internal:8080/api/v1/push
+  - url: https://identity-idva-monitoring-cortex-${ENVIRONMENT_NAME}.apps.internal:8080/api/v1/push
     tls_config:
       insecure_skip_verify: true
 
