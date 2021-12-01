@@ -33,6 +33,7 @@ jobs:
           body: '[Prometheus ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
           commit-message: Bump Prometheus version to ${{ env.LATEST_VERSION }}
           committer: idva-bot <idva@gsa.gov>
+          author: idva-bot <idva@gsa.gov>
           branch: bump-prometheus-version
           reviewers: |
             18f/idva-partners
@@ -61,6 +62,7 @@ jobs:
           body: '[Alertmanager ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
           commit-message: Bump Alertmanager version to ${{ env.LATEST_VERSION }}
           committer: idva-bot <idva@gsa.gov>
+          author: idva-bot <idva@gsa.gov>
           branch: bump-alertmanager-version
           reviewers: |
             18f/idva-partners
@@ -89,6 +91,7 @@ jobs:
           body: '[Cortex ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
           commit-message: Bump Cortex version to ${{ env.LATEST_VERSION }}
           committer: idva-bot <idva@gsa.gov>
+          author: idva-bot <idva@gsa.gov>
           branch: bump-cortex-version
           reviewers: |
             18f/idva-partners
@@ -117,6 +120,7 @@ jobs:
           body: '[Grafana ${{env.LATEST_VERSION}} release](${{env.HTML_URL}})'
           commit-message: Bump Grafana version to ${{ env.LATEST_VERSION }}
           committer: idva-bot <idva@gsa.gov>
+          author: idva-bot <idva@gsa.gov>
           branch: bump-grafana-version
           reviewers: |
             18f/idva-partners
