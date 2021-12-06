@@ -35,11 +35,14 @@ echo "Found current version: $current_version"
 
 latest_json=$(curl --silent "$2")
 latest_version=$(echo "$latest_json" | jq -r .tag_name | tr -d 'v')
-echo "Latest version available: $latest_version"
+echo "Latest version in repo: $latest_version"
 
 html_url=$(echo "$latest_json" | jq -r .html_url)
-echo -n "$latest_version" > "$1"
 
+latest_version=$(echo -e "$latest_version\n$current_version" | sort -V | tail -n1)
+echo "Latest version: $latest_version"
+
+echo -n "$latest_version" > "$1"
 {
   echo "CURRENT_VERSION=$current_version"
   echo "LATEST_VERSION=$latest_version"
