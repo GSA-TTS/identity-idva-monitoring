@@ -1,0 +1,44 @@
+---
+name: Deploy Watchtower
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - 'watchtower/**'
+      - '.github/workflows/deploy-watchtower.yaml'
+      - '!**.md'  # Ignore all markdown files in the repository
+  release:
+    types: [released]
+
+jobs:
+  deploy:
+    if: github.repository_owner == '18F'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: 18F/identity-idva-cf-setup@v2
+        id: cf-setup
+        with:
+          cf-username: ${{ secrets.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+          cf-org: ${{ secrets.CF_ORG }}
+
+      - name: Set audit user credentials
+        run: |
+          target_env_upper=${{ steps.cf-setup.outputs.target-environment-upper }}
+          echo "watchtower_user=WATCHTOWER_USER_$target_env_upper" >> $GITHUB_ENV
+          echo "watchtower_pass=WATCHTOWER_PASS_$target_env_upper" >> $GITHUB_ENV
+
+      - name: Deploy Watchtower
+        run: |
+          cf push
+            --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+            --var CF_USER=${{ secrets[env.watchtower_user] }} \
+            --var CF_PASS=${{ secrets[env.watchtower_pass] }}
+            --strategy rolling
+        working-directory: ./watchtower

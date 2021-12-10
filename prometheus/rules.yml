@@ -92,3 +92,26 @@ groups:
             Within the last 5 minutes, the {{ $labels.app }} has crashed at
             least once.
           icon: 🔥
+
+  - name: WatchtowerAlerts
+    rules:
+      - alert: Unknown Apps Deployed
+        expr: watchtower_unknown_apps_total != 0
+        annotations:
+          summary: There are {{ $value }} unknown apps deployed.
+          description: Applications are marked as unknown if they are deployed
+            to an environment and not incuded in the Watchtower config file.
+      - alert: Missing Apps Detected
+        expr: watchtower_missing_apps_total != 0
+        annotations:
+          summary: There are {{ $value }} apps missing.
+          description: Applications are marked as missing if they are not
+            deployed to an environment, yet are incuded in the Watchtower
+            config file.
+      - alert: SSH Misconfiguration Detected
+        expr: watchtower_ssh_space_misconfiguration_total != 0
+        annotations:
+          summary: SSH is misconfigured for {{ $value }} CF Spaces.
+          description: Spaces are marked as misconfigured if the allow_ssh value
+            in the watchtower config does not match the current space
+            SSH access configuration.
