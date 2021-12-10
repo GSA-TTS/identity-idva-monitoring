@@ -71,6 +71,14 @@ scrape_configs:
     tls_config:
       insecure_skip_verify: true
 
+  - job_name: 'dns-discovery-watchtower'
+    dns_sd_configs:
+      - names:
+          - 'identity-idva-monitoring-watchtower-${ENVIRONMENT_NAME}.apps.internal'
+        type: 'A'
+        port: 8080
+    scheme: http
+
   - job_name: 'dns-redis-exporter'
     dns_sd_configs:
       - names:
