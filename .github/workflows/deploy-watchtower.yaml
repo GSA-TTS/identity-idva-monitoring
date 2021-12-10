@@ -35,10 +35,9 @@ jobs:
           echo "watchtower_pass=WATCHTOWER_PASS_$target_env_upper" >> $GITHUB_ENV
 
       - name: Deploy Watchtower
-        run: |
-          cf push
-            --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
-            --var CF_USER=${{ secrets[env.watchtower_user] }} \
-            --var CF_PASS=${{ secrets[env.watchtower_pass] }}
-            --strategy rolling
+        run: cf push --vars-file vars.yaml
+          --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+          --var CF_USER=${{ secrets[env.watchtower_user] }} \
+          --var CF_PASS=${{ secrets[env.watchtower_pass] }}
+          --strategy rolling
         working-directory: ./watchtower
