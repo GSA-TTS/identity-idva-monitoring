@@ -20,16 +20,13 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "gnetId": null,
   "graphTooltip": 0,
-  "id": 1,
-  "iteration": 1635970713547,
+  "iteration": 1639122842430,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -42,7 +39,10 @@
       "type": "row"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -98,6 +98,10 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "sum by (app) (irate(crash{app=~\"$app\"}[5m]) * 60)",
           "interval": "",
@@ -109,7 +113,6 @@
       "type": "status-history"
     },
     {
-      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -121,7 +124,10 @@
       "type": "row"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -191,8 +197,12 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
-          "expr": "sum by (app) (irate(requests{app=~\"$app\"}[5m]) * 60) # multiply by 60 for real time per second usage",
+          "expr": "sum by (app) (irate(requests{app=~\"$app\"}[5m]))",
           "interval": "",
           "legendFormat": "requests to {{app}}",
           "refId": "A"
@@ -202,7 +212,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -272,8 +285,12 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
-          "expr": "sum by (status_range) (irate(requests{app=~\"$app\"}[5m]) * 60) # multiply by 60 for real time per second usage",
+          "expr": "sum by (status_range) (irate(requests{app=~\"$app\"}[5m]))",
           "interval": "",
           "legendFormat": "{{status_range}}",
           "refId": "A"
@@ -283,7 +300,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -354,6 +374,10 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(0.99, rate(response_time_bucket{app=~\"$app\"}[5m]))",
           "interval": "",
@@ -361,6 +385,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(0.95, rate(response_time_bucket{app=~\"$app\"}[5m]))",
           "hide": false,
@@ -369,14 +397,22 @@
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
-          "expr": "quantile(0.9, rate(response_time_bucket{app=~\"$app\"}[5m]))",
+          "expr": "quantile(0.5, rate(response_time_bucket{app=~\"$app\"}[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "p50",
           "refId": "C"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "avg by (app) (\n  rate(response_time_bucket{app=~\"$app\"}[5m])\n)",
           "hide": false,
@@ -390,7 +426,6 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -403,7 +438,10 @@
       "type": "row"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -476,6 +514,10 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(0.99, cpu{app=~\"$app\"})",
           "interval": "",
@@ -483,6 +525,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(0.95, cpu{app=~\"$app\"})",
           "hide": false,
@@ -491,6 +537,10 @@
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(0.5, cpu{app=~\"$app\"})",
           "hide": false,
@@ -499,6 +549,10 @@
           "refId": "C"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "avg by (app) (\n  cpu{app=~\"$app\"}\n)",
           "hide": false,
@@ -511,7 +565,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -584,6 +641,10 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "cpu{app=~\"$app\"}",
           "interval": "",
@@ -595,7 +656,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -668,6 +732,10 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(.99, memory_utilization{app=~\"$app\"})",
           "interval": "",
@@ -675,6 +743,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(.95, memory_utilization{app=~\"$app\"})",
           "hide": false,
@@ -683,6 +755,10 @@
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(.50, memory_utilization{app=~\"$app\"})",
           "hide": false,
@@ -691,6 +767,10 @@
           "refId": "C"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "avg by (app) (\n  memory_utilization{app=~\"$app\"}\n)",
           "hide": false,
@@ -703,7 +783,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -776,6 +859,10 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "memory_utilization{app=~\"$app\"}",
           "interval": "",
@@ -787,7 +874,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -860,6 +950,10 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(.99, disk_utilization{app=~\"$app\"})",
           "interval": "",
@@ -867,6 +961,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(.95, disk_utilization{app=~\"$app\"})",
           "hide": false,
@@ -875,6 +973,10 @@
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "quantile(.50, disk_utilization{app=~\"$app\"})",
           "hide": false,
@@ -883,6 +985,10 @@
           "refId": "C"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "avg by (app) (\n  disk_utilization{app=~\"$app\"}\n)",
           "hide": false,
@@ -895,7 +1001,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -968,6 +1077,10 @@
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "exemplar": true,
           "expr": "disk_utilization{app=~\"$app\"}",
           "interval": "",
@@ -979,22 +1092,19 @@
       "type": "timeseries"
     }
   ],
-  "schemaVersion": 31,
+  "refresh": "30s",
+  "schemaVersion": 33,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
-        "allValue": null,
         "current": {
           "selected": true,
           "text": "kong",
           "value": "kong"
         },
-        "datasource": null,
         "definition": "label_values(app)",
-        "description": null,
-        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "App Name",
@@ -1010,6 +1120,25 @@
         "skipUrlSync": false,
         "sort": 0,
         "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "idva-monitoring-data",
+          "value": "idva-monitoring-data"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       }
     ]
   },
@@ -1021,5 +1150,6 @@
   "timezone": "",
   "title": "IDVA App Metrics",
   "uid": "Qjfwu0F7z",
-  "version": 1
+  "version": 1,
+  "weekStart": ""
 }
