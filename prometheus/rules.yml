@@ -85,11 +85,11 @@ groups:
   - name: RequestVolumeAlerts
     rules:
       - alert: Abnormal High Request Volume
-        expr: sum by (app) (irate(requests[5m])) > 200
+        expr: sum by (app) (irate(requests[2m])) > 200
         annotations:
-          summary: The 5 min average request volume is {{ $value | printf "%.0f" }} requests/s
+          summary: The 2 min average request volume is {{ $value | printf "%.0f" }} requests/s
           description: >-
-            The request volume has been greater than 200 requests/s over the last 5 minutes.
+            The request volume has been greater than 200 requests/s over the last 2 minutes.
           icon: 🌊
 
   - name: AppCrashAlerts
