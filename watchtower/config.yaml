@@ -4,9 +4,6 @@ apps:
   cf_apps:
     - name: alertmanager
     - name: cf-metrics
-    - name: consul-0
-    - name: consul-1
-    - name: consul-2
     - name: cortex
     - name: elasticsearch-metrics
     - name: es-proxy
