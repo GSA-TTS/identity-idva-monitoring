@@ -11,4 +11,4 @@ applications:
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
       GRAFANA_PASS: ((GRAFANA_PASS))
-    command: ./install_grafana.sh && ./bin/grafana-server web
+    command: ./bin/grafana-server web

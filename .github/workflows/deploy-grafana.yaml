@@ -28,6 +28,10 @@ jobs:
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
 
+      - name: Install Grafana
+        run: ./install_grafana.sh
+        working-directory: ./grafana
+
       - name: Deploy Grafana
         run: cf push
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
