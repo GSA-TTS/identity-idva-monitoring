@@ -29,7 +29,7 @@ jobs:
           cf-org: ${{ secrets.CF_ORG }}
 
       - name: Deploy Grafana
-        run: cf push
+        run: ./install_grafana.sh && cf push
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
           --var GRAFANA_PASS=${{ secrets.GRAFANA_PASS }}
           --strategy rolling
