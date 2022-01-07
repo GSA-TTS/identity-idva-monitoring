@@ -32,8 +32,12 @@ jobs:
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
 
+      - name: Install Prometheus
+        run: ./install_prometheus.sh
+        working-directory: ./prometheus
+
       - name: Deploy Prometheus
-        run: ./install_prometheus.sh && cf push --vars-file vars.yaml
+        run: cf push --vars-file vars.yaml
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
           --strategy rolling
         working-directory: ./prometheus
