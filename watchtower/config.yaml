@@ -43,7 +43,6 @@ apps:
     - name: sk-variables
     - name: sk-webhook
     - name: static-assets
-    - name: usps
     - name: watchtower
 spaces:
   enabled: true
