@@ -36,6 +36,7 @@ apps:
     - name: sk-openid
     - name: sk-portal
     - name: sk-sdk
+    - name: sk-smtp
     - name: sk-totp
     - name: sk-transunion
     - name: sk-userpolicy
