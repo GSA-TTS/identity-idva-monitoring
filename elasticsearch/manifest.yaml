@@ -1,0 +1,13 @@
+---
+version: 1
+applications:
+  - name: elasticsearch-metrics
+    memory: ((MEMORY))
+    instances: ((INSTANCES))
+    routes:
+      - route: identity-idva-metrics-elasticsearch-((ENVIRONMENT_NAME)).apps.internal
+    buildpacks:
+      - binary_buildpack
+    command: |
+      ./install_elasticsearch_exporter.sh && \
+      ./elasticsearch_exporter --es.uri http://identity-idva-es-proxy-((ENVIRONMENT_NAME)).apps.internal:8080 --web.listen-address :8080
