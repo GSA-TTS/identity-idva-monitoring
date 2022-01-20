@@ -10,6 +10,8 @@ apps:
     - name: grafana
     - name: kibana
     - name: kong
+    - name: locust
+      optional: true
     - name: prometheus
     - name: redis-metrics
     - name: sk-analytics
@@ -43,6 +45,8 @@ apps:
     - name: sk-variables
     - name: sk-webhook
     - name: static-assets
+    - name: usps
+      optional: true
     - name: watchtower
 spaces:
   enabled: true
