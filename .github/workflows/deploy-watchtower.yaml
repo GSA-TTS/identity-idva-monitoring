@@ -27,6 +27,7 @@ jobs:
           cf-username: ${{ secrets.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
+          space-suffix: "-public"
 
       - name: Set audit user credentials
         run: |
