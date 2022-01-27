@@ -27,6 +27,7 @@ jobs:
           cf-username: ${{ secrets.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
+          space-suffix: "-public"
 
       - name: Deploy Cortex
         run: cf push --vars-file vars.yaml
@@ -36,5 +37,10 @@ jobs:
 
       - name: Apply CF Network Policies
         run: |
-          cf add-network-policy prometheus cortex
-          cf add-network-policy grafana cortex
+          restricted_space=${{ steps.cf-setup.outputs.target-environment }}
+          public_space=${{ steps.cf-setup.outputs.target-environment }}-public
+
+          # Apps that need to communicate to cortex are in restricted space
+          cf target -s "$restricted_space"
+          cf add-network-policy prometheus cortex -s "$public_space"
+          cf add-network-policy grafana cortex -s "$public_space"
