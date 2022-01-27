@@ -29,6 +29,10 @@ jobs:
           cf-org: ${{ secrets.CF_ORG }}
           space-suffix: "-public"
 
+      - name: Install Cortex
+        run: ./install_cortex.sh
+        working-directory: ./cortex
+
       - name: Deploy Cortex
         run: cf push --vars-file vars.yaml
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
