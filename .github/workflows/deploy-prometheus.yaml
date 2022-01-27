@@ -44,7 +44,9 @@ jobs:
 
       - name: Apply CF Network Policies
         run: |
-          cf add-network-policy prometheus alertmanager
+          public_space=${{ steps.cf-setup.outputs.target-environment }}-public
+
+          cf add-network-policy prometheus alertmanager -s "$public_space"
           cf add-network-policy prometheus cf-metrics
           cf add-network-policy prometheus redis-metrics
           cf add-network-policy prometheus elasticsearch-metrics
