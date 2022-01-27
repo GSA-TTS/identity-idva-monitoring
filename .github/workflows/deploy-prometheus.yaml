@@ -31,6 +31,7 @@ jobs:
           cf-username: ${{ secrets.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
+          space-suffix: "-closed"
 
       - name: Install Prometheus
         run: ./install_prometheus.sh
@@ -45,10 +46,11 @@ jobs:
       - name: Apply CF Network Policies
         run: |
           public_space=${{ steps.cf-setup.outputs.target-environment }}-public
+          restricted_space=${{ steps.cf-setup.outputs.target-environment }}
 
           cf add-network-policy prometheus alertmanager -s "$public_space"
-          cf add-network-policy prometheus cf-metrics
-          cf add-network-policy prometheus redis-metrics
-          cf add-network-policy prometheus elasticsearch-metrics
-          cf add-network-policy prometheus kong --port 8100 --protocol tcp
+          cf add-network-policy prometheus cf-metrics -s "$restricted_space"
+          cf add-network-policy prometheus redis-metrics -s "$restricted_space"
+          cf add-network-policy prometheus elasticsearch-metrics -s "$restricted_space"
+          cf add-network-policy prometheus kong --port 8100 --protocol tcp -s "$restricted_space"
           cf add-network-policy prometheus watchtower -s "$public_space"
