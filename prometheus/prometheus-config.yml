@@ -11,6 +11,9 @@ alerting:
   alert_relabel_configs:
     - action: labeldrop
       regex: __replica__
+    - action: labeldrop
+      regex: instance
+
   alertmanagers:
     - dns_sd_configs:
         - names:
