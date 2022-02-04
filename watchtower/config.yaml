@@ -13,6 +13,7 @@ apps:
     - name: kong
     - name: locust
       optional: true
+    - name: outbound-proxy
     - name: prometheus
     - name: redis-metrics
     - name: sk-analytics
