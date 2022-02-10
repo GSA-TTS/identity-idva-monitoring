@@ -35,4 +35,4 @@ jobs:
         working-directory: ./kibana
 
       - name: Apply CF Network Policies
-        run: cf add-network-policy kibana es-proxy
+        run: ./create-network-policies.sh

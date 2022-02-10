@@ -35,6 +35,4 @@ jobs:
         working-directory: ./elasticsearch
 
       - name: Apply CF Network Policies
-        run: |
-          # Elasticsearch proxy route
-          cf add-network-policy elasticsearch-metrics es-proxy
+        run: ./create-network-policies.sh

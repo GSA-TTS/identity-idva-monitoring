@@ -35,6 +35,4 @@ jobs:
         working-directory: ./cortex
 
       - name: Apply CF Network Policies
-        run: |
-          cf add-network-policy prometheus cortex
-          cf add-network-policy grafana cortex
+        run: ./create-network-policies.sh
