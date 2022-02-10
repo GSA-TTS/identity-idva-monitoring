@@ -40,9 +40,7 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:8080']
-    scheme: https
-    tls_config:
-      insecure_skip_verify: true
+    scheme: http
 
   - job_name: 'dns-discovery-kong'
     dns_sd_configs:
