@@ -49,6 +49,4 @@ jobs:
         working-directory: ./alertmanager
 
       - name: Apply CF Network Policies
-        run: |
-          cf add-network-policy alertmanager alertmanager --protocol tcp --port 9094
-          cf add-network-policy alertmanager alertmanager --protocol udp --port 9094
+        run: ./create-network-policies.sh
