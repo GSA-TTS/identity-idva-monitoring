@@ -41,5 +41,5 @@ jobs:
 
       - name: Apply CF Network Policies
         run: |
-          cf add-network-policy grafana prometheus
+          cf add-network-policy grafana prometheus --protocol tcp --port 61443
           cf add-network-policy prometheus grafana

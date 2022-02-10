@@ -9,7 +9,10 @@ applications:
       - https://github.com/cloudfoundry/apt-buildpack
       - binary_buildpack
     command: |
-      # Use 'source' to prevent creating a new shell process for 'run.sh'
-      source run.sh
+      envsubst < prometheus-config.yml > prometheus.yml
+      ./prometheus \
+        --web.listen-address="0.0.0.0:$PORT" \
+        --storage.tsdb.retention.size="950MB" \
+        --web.external-url https://identity-idva-monitoring-prometheus-"$ENVIRONMENT_NAME".apps.internal/
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
