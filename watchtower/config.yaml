@@ -14,6 +14,7 @@ apps:
     - name: locust
       optional: true
     - name: outbound-proxy
+      optional: true
     - name: prometheus
     - name: redis-metrics
     - name: sk-analytics
