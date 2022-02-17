@@ -41,6 +41,7 @@ apps:
     - name: sk-portal
     - name: sk-sdk
     - name: sk-smtp
+    - name: sk-socure
     - name: sk-totp
     - name: sk-transunion
     - name: sk-userpolicy
