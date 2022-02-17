@@ -8,6 +8,7 @@ apps:
     - name: elasticsearch-metrics
     - name: es-proxy
     - name: gpo
+      optional: true
     - name: grafana
     - name: kibana
     - name: kong
