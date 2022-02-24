@@ -1,5 +1,16 @@
 ---
 groups:
+  - name: Job Alerts
+    rules:
+      - alert: Prometheus Job Down
+        expr: avg by (job) (up) != 1
+        annotations:
+          summary: Prometheus scrape job {{ $labels.job }} is down.
+          description: >-
+            A Prometheus job was unable to scrape information from one or more
+            instances. The instance may be unhealthy or unreachable.
+          icon: 🛑
+
   - name: HardwareAlerts
     rules:
       # High utilization alerts
