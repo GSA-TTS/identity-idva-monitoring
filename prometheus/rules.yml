@@ -111,6 +111,7 @@ groups:
           summary: There are {{ $value }} unknown apps deployed.
           description: Applications are marked as unknown if they are deployed
             to an environment and not incuded in the Watchtower config file.
+          icon: 🚨
 
       - alert: Missing Apps Detected
         expr: watchtower_missing_apps_total != 0
@@ -119,6 +120,7 @@ groups:
           description: Applications are marked as missing if they are not
             deployed to an environment, yet are incuded in the Watchtower
             config file.
+          icon: 🚨
 
       - alert: SSH Misconfiguration Detected
         expr: watchtower_ssh_space_misconfiguration_total != 0
@@ -127,6 +129,7 @@ groups:
           description: Spaces are marked as misconfigured if the allow_ssh value
             in the watchtower config does not match the current space
             SSH access configuration.
+          icon: 🚨
 
       # Alert when checks are failing
       - alert: Failed Space Checks
@@ -134,9 +137,11 @@ groups:
         annotations:
           summary: Watchtower failed when validating CF Space configurations
           description: Check the Watchtower logs for failure details.
+          icon: ❓
 
       - alert: Failed App Checks
         expr: increase(watchtower_app_checks_failed_total[10m]) != 0
         annotations:
           summary: Watchtower failed when validating CF App configurations
           description: Check the Watchtower logs for failure details.
+          icon: ❓
