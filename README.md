@@ -21,9 +21,13 @@ of the application routes.
   [prometheus-config.yml](#prometheus-config.yml) adds the application to prometheus's
   monitoring. By using the `dns_sd_config` we are able to see and query **all** instances
   of the application, and are not load balanced to random instances every query.
-* Grafana: a simple dashboard setup to view some of the IDVA metrics in real-time
-* Alertmanager: an HA Alertmanager cluster that handles alert deduplication and
-routing.
+* Grafana: A simple dashboard setup to view some of the IDVA metrics in real-time
+* Alertmanager: an HA Alertmanager cluster that handles alert deduplication and routing.
+* Cortex: A single-binary-mode Cortex instance for shipping metrics to S3 for long-term storage.
+* Watchtower: A run-anywhere, Cloud Foundry drift detection service (designed to be scraped by Prometheus).
+* Kibana: Basic Kibana setup for quickly querying elasticsearch data in cloud.gov
+* Elasticsearch: A Prometheus exporter for Elasticsearch metrics on cloud.gov
+* Redis: A Prometheus Exporter for Redis metrics on cloud.gov
 
 ## Generating the config files
 The config files are generic to prevent having to have multiple configuration files
@@ -31,6 +35,7 @@ per space (dev, test, prod, etc). The <tool-name>-config.yml files are intended 
 fed to `envsubst` after the appropriate environment variable has been set. The config
 should be output to the appropriate named files (see examples below).
 ```shell
+# Examples of config file generation using envsubst
 envsubst < prometheus/prometheus-config.yml > prometheus/prometheus.yml
 envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
 ```
