@@ -9,6 +9,7 @@ groups:
           description: >-
             A Prometheus job was unable to scrape information from one or more
             instances. The instance may be unhealthy or unreachable.
+          icon: 🛑
 
   - name: HardwareAlerts
     rules:
