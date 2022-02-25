@@ -8,9 +8,8 @@ microservice has the following goals:
 * Provide monitoring capabilities for IDVA microservices
 * Alert IDVA operators/admins on specified metric thresholds
 
-## CI/CD Workflows with GitHub Actions
-The most up-to-date information about the CI/CD flows for this repo can be found in the
-[GitHub workflows directory](https://github.com/18F/identity-idva-monitoring/tree/main/.github/workflows)
+## Architecture Overview
+![architecture-diagram](.github/monitoring-architecture.svg)
 
 ## Implementation
 IDVA monitoring is a set of monitoring tools that get deployed together to enable
@@ -39,6 +38,10 @@ should be output to the appropriate named files (see examples below).
 envsubst < prometheus/prometheus-config.yml > prometheus/prometheus.yml
 envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
 ```
+
+## CI/CD Workflows with GitHub Actions
+The most up-to-date information about the CI/CD flows for this repo can be found in the
+[GitHub workflows directory](https://github.com/18F/identity-idva-monitoring/tree/main/.github/workflows)
 
 ## Public domain
 
