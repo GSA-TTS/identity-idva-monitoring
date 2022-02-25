@@ -8,26 +8,23 @@ microservice has the following goals:
 * Provide monitoring capabilities for IDVA microservices
 * Alert IDVA operators/admins on specified metric thresholds
 
-## CI/CD Workflows with GitHub Actions
-The most up-to-date information about the CI/CD flows for this repo can be found in the
-[GitHub workflows directory](https://github.com/18F/identity-idva-monitoring/tree/main/.github/workflows)
+## Architecture Overview
+![architecture-diagram](.github/monitoring-architecture.svg)
 
 ## Implementation
 IDVA monitoring is a set of monitoring tools that get deployed together to enable
 monitoring of the IDVA system. The repo is broken down by tool and contains:
-* Prometheus: an HA Prometheus setup to monitor applications based on DNS querying
-of the application routes. 
-  * For all applications we wish to monitor, adding a `dns_sd_config` within the
-  [prometheus-config.yml](#prometheus-config.yml) adds the application to prometheus's
-  monitoring. By using the `dns_sd_config` we are able to see and query **all** instances
-  of the application, and are not load balanced to random instances every query.
-* Grafana: A simple dashboard setup to view some of the IDVA metrics in real-time
-* Alertmanager: an HA Alertmanager cluster that handles alert deduplication and routing.
-* Cortex: A single-binary-mode Cortex instance for shipping metrics to S3 for long-term storage.
-* Watchtower: A run-anywhere, Cloud Foundry drift detection service (designed to be scraped by Prometheus).
-* Kibana: Basic Kibana setup for quickly querying elasticsearch data in cloud.gov
-* Elasticsearch: A Prometheus exporter for Elasticsearch metrics on cloud.gov
-* Redis: A Prometheus Exporter for Redis metrics on cloud.gov
+* [Prometheus](https://prometheus.io/): an HA Prometheus setup to monitor applications based on DNS querying of the application routes. 
+  * For all applications we wish to monitor, adding a `dns_sd_config` within the [prometheus-config.yml](#prometheus-config.yml) adds
+  the application to prometheus's monitoring. By using the `dns_sd_config` we are able to see and query **all** instances of the application,
+  and are not load balanced to random instances every query.
+* [Grafana](https://grafana.com/oss/grafana/): A simple dashboard setup to view some of the IDVA metrics in real-time
+* [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/): an HA Alertmanager cluster that handles alert deduplication and routing.
+* [Cortex](https://cortexmetrics.io/): A single-binary-mode Cortex instance for shipping metrics to S3 for long-term storage.
+* [Watchtower](https://github.com/18F/watchtower): A run-anywhere, Cloud Foundry drift detection service (designed to be scraped by Prometheus).
+* [Kibana](https://www.elastic.co/kibana/): Basic Kibana setup for quickly querying elasticsearch data in cloud.gov
+* [Elasticsearch](https://github.com/prometheus-community/elasticsearch_exporter/): A Prometheus exporter for Elasticsearch metrics on cloud.gov
+* [Redis](https://github.com/oliver006/redis_exporter/): A Prometheus Exporter for Redis metrics on cloud.gov
 
 ## Generating the config files
 The config files are generic to prevent having to have multiple configuration files
@@ -39,6 +36,10 @@ should be output to the appropriate named files (see examples below).
 envsubst < prometheus/prometheus-config.yml > prometheus/prometheus.yml
 envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
 ```
+
+## CI/CD Workflows with GitHub Actions
+The most up-to-date information about the CI/CD flows for this repo can be found in the
+[GitHub workflows directory](https://github.com/18F/identity-idva-monitoring/tree/main/.github/workflows)
 
 ## Public domain
 
