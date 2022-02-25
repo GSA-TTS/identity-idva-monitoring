@@ -15,7 +15,7 @@ microservice has the following goals:
 IDVA monitoring is a set of monitoring tools that get deployed together to enable
 monitoring of the IDVA system. The repo is broken down by tool and contains:
 * [Prometheus](https://prometheus.io/): an HA Prometheus setup to monitor applications based on DNS querying of the application routes. 
-  * For all applications we wish to monitor, adding a `dns_sd_config` within the [prometheus-config.yml](#prometheus-config.yml) adds
+  * For all applications we wish to monitor, adding a `dns_sd_config` within the [prometheus-config.yml](prometheus/prometheus-config.yml) adds
   the application to prometheus's monitoring. By using the `dns_sd_config` we are able to see and query **all** instances of the application,
   and are not load balanced to random instances every query.
 * [Grafana](https://grafana.com/oss/grafana/): A simple dashboard setup to view some of the IDVA metrics in real-time
