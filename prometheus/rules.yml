@@ -4,6 +4,7 @@ groups:
     rules:
       - alert: Prometheus Job Down
         expr: avg by (job) (up) != 1
+        for: 5m
         annotations:
           summary: Prometheus scrape job {{ $labels.job }} is down.
           description: >-
