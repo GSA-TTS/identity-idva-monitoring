@@ -10,6 +10,7 @@ on:
     paths:
       - 'redis/**'
       - '.github/workflows/deploy-redis.yaml'
+      - '!**.md'  # Ignore all markdown files in the repository
   release:
     types: [released]
 
