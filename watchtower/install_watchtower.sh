@@ -2,7 +2,7 @@
 
 # To update Watchtower, simply update the version number in the VERSION file
 version_num=$(cat VERSION)
-download_url="https://github.com/18F/watchtower/releases/download/v$version_num/"
+download_url="https://github.com/18F/watchtower/releases/download/v$version_num"
 binary_name="watchtower-$version_num.linux-amd64"
 archive_name="$binary_name.tar.gz"
 shasum_filename="sha256sums.txt"
