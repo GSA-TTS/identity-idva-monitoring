@@ -1,25 +1,48 @@
 ---
 apps:
   enabled: true
-  cf_apps:
+  resources:
     - name: alertmanager
+      routes:
+        - identity-idva-monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal
+        - fake-route.apps.internal
     - name: cf-metrics
+      routes:
+        - identity-idva-cf-metrics-${ENVIRONMENT_NAME}.apps.internal
     - name: cortex
+      routes:
+        - identity-idva-monitoring-cortex-${ENVIRONMENT_NAME}.apps.internal
     - name: elasticsearch-metrics
+      routes:
+        - identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal
     - name: es-proxy
+      routes:
+        - identity-idva-es-proxy-${ENVIRONMENT_NAME}.apps.internal
     - name: gpo
       optional: true
     - name: grafana
+      routes:
+        - identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal
     - name: kibana
     - name: kong
+      routes:
+        - identity-idva-kong-${ENVIRONMENT_NAME}.apps.internal
+        - idva-api-${ENVIRONMENT_NAME}.app.cloud.gov
     - name: locust
       optional: true
     - name: outbound-proxy
       optional: true
     - name: prometheus
+      routes:
+        - identity-idva-monitoring-prometheus-${ENVIRONMENT_NAME}.apps.internal
     - name: redis-metrics
+      routes:
+        - identity-idva-metrics-redis-${ENVIRONMENT_NAME}.apps.internal
     - name: sk-analytics
     - name: sk-api
+      routes:
+        - identity-idva-sk-api-${ENVIRONMENT_NAME}.apps.internal
+    - name: sk-authenticid
     - name: sk-challenge
     - name: sk-credential
     - name: sk-dbconfigs
@@ -39,23 +62,36 @@ apps:
     - name: sk-mfacontainer
     - name: sk-node
     - name: sk-oe
+    - name: sk-onfido
     - name: sk-openid
     - name: sk-portal
+      routes:
+        - idva-portal-${ENVIRONMENT_NAME}.app.cloud.gov
     - name: sk-sdk
+      routes:
+        - idva-sdk-${ENVIRONMENT_NAME}.app.cloud.gov
     - name: sk-smtp
     - name: sk-socure
     - name: sk-totp
     - name: sk-transunion
+    - name: sk-transunion-tloxp
     - name: sk-userpolicy
     - name: sk-variables
     - name: sk-webhook
     - name: static-assets
+      routes:
+        - identity-idva-static-assets-${ENVIRONMENT_NAME}.app.cloud.gov
     - name: usps
+      routes:
+        - identity-idva-usps-${ENVIRONMENT_NAME}.apps.internal
       optional: true
     - name: watchtower
+      routes:
+        - identity-idva-monitoring-watchtower-${ENVIRONMENT_NAME}.apps.internal
+
 spaces:
   enabled: true
-  cf_spaces:
+  resources:
     - name: dev
       allow_ssh: true
     - name: test
