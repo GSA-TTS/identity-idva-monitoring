@@ -1,7 +1,7 @@
 ---
 apps:
   enabled: true
-  cf_apps:
+  resources:
     - name: alertmanager
     - name: cf-metrics
     - name: cortex
@@ -55,7 +55,7 @@ apps:
     - name: watchtower
 spaces:
   enabled: true
-  cf_spaces:
+  resources:
     - name: dev
       allow_ssh: true
     - name: test
