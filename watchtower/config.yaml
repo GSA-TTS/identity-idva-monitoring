@@ -5,7 +5,6 @@ apps:
     - name: alertmanager
       routes:
         - identity-idva-monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal
-        - fake-route.apps.internal
     - name: cf-metrics
       routes:
         - identity-idva-cf-metrics-${ENVIRONMENT_NAME}.apps.internal
