@@ -5,6 +5,8 @@ applications:
       - route: identity-idva-monitoring-watchtower-((ENVIRONMENT_NAME)).apps.internal
     memory: ((MEMORY))
     instances: ((INSTANCES))
+    health-check-type: http
+    health-check-http-endpoint: /health
     buildpacks:
       - binary_buildpack
     command: |
