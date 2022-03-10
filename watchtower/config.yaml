@@ -42,6 +42,7 @@ apps:
     - name: sk-api
       routes:
         - identity-idva-sk-api-${ENVIRONMENT_NAME}.apps.internal
+    - name: sk-authenticid
     - name: sk-challenge
     - name: sk-credential
     - name: sk-dbconfigs
@@ -61,6 +62,7 @@ apps:
     - name: sk-mfacontainer
     - name: sk-node
     - name: sk-oe
+    - name: sk-onfido
     - name: sk-openid
     - name: sk-portal
       routes:
@@ -72,6 +74,7 @@ apps:
     - name: sk-socure
     - name: sk-totp
     - name: sk-transunion
+    - name: sk-transunion-tloxp
     - name: sk-userpolicy
     - name: sk-variables
     - name: sk-webhook
