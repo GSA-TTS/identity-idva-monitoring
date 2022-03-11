@@ -4,6 +4,8 @@ applications:
     stack: cflinuxfs3
     instances: 2
     memory: 256MB
+    health-check-type: http
+    health-check-http-endpoint: /api/health
     buildpacks:
       - https://github.com/cloudfoundry/binary-buildpack
     routes:
