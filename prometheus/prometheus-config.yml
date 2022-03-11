@@ -59,15 +59,12 @@ scrape_configs:
     static_configs:
       - targets: ['identity-idva-cf-metrics-${ENVIRONMENT_NAME}.apps.internal:8080']
 
-  - job_name: 'dns-discovery-grafana'
-    dns_sd_configs:
-      - names:
-          - 'identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal'
-        type: 'A'
-        port: 8080
+  - job_name: 'grafana'
     scheme: https
     tls_config:
       insecure_skip_verify: true
+    static_configs:
+      - targets: ['identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal:8080']
 
   - job_name: 'watchtower'
     static_configs:
