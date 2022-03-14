@@ -3,9 +3,6 @@ auth_enabled: false
 
 server:
   http_listen_port: ${PORT}
-  http_tls_config:
-    cert_file: ${CF_INSTANCE_CERT}
-    key_file: ${CF_INSTANCE_KEY}
 
   # Configure the server to allow messages up to 100MB.
   grpc_server_max_recv_msg_size: 104857600
