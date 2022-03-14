@@ -13,6 +13,7 @@ groups:
           icon: 🛑
 
   - name: HardwareAlerts
+    # Metrics pulled from cf-metrics app, not individual scrape jobs
     rules:
       # High utilization alerts
       - alert: High CPU utilization

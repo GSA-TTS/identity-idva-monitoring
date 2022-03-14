@@ -2,7 +2,7 @@
 applications:
   - name: grafana
     stack: cflinuxfs3
-    instances: 1
+    instances: 2
     memory: 256MB
     buildpacks:
       - https://github.com/cloudfoundry/binary-buildpack
