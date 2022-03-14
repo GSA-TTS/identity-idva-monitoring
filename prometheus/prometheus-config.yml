@@ -75,5 +75,6 @@ scrape_configs:
       - targets: ['identity-idva-metrics-redis-${ENVIRONMENT_NAME}.apps.internal:8080']
 
   - job_name: 'elasticsearch-exporter'
+    scheme: https
     static_configs:
-      - targets: ['identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal:8080']
+      - targets: ['identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal:61443']
