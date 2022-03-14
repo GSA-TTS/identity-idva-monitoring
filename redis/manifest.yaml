@@ -13,8 +13,6 @@ applications:
       ./redis_exporter --web.listen-address 0.0.0.0:8080 \
         --redis.addr "rediss://$( echo $VCAP_SERVICES | jq -r '."aws-elasticache-redis"[0].credentials.host')" \
         --redis.password $( echo $VCAP_SERVICES | jq -r '."aws-elasticache-redis"[0].credentials.password') \
-        --tls-server-key-file $CF_INSTANCE_KEY \
-        --tls-server-cert-file $CF_INSTANCE_CERT \
         --check-keys '*Connector'
     services:
       - sk-redis

@@ -69,10 +69,8 @@ scrape_configs:
 
   - job_name: 'redis-exporter'
     scheme: https
-    tls_config:
-      insecure_skip_verify: true
     static_configs:
-      - targets: ['identity-idva-metrics-redis-${ENVIRONMENT_NAME}.apps.internal:8080']
+      - targets: ['identity-idva-metrics-redis-${ENVIRONMENT_NAME}.apps.internal:61443']
 
   - job_name: 'elasticsearch-exporter'
     scheme: https
