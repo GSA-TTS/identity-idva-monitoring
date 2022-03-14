@@ -65,8 +65,9 @@ scrape_configs:
       - targets: ['identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal:61443']
 
   - job_name: 'watchtower'
+    scheme: https
     static_configs:
-      - targets: ['identity-idva-monitoring-watchtower-${ENVIRONMENT_NAME}.apps.internal:8080']
+      - targets: ['identity-idva-monitoring-watchtower-${ENVIRONMENT_NAME}.apps.internal:61443']
 
   - job_name: 'redis-exporter'
     scheme: https

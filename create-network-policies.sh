@@ -27,4 +27,4 @@ cf add-network-policy prometheus elasticsearch-metrics
 cf add-network-policy prometheus grafana --port 61443 --protocol tcp
 cf add-network-policy prometheus kong --port 8100 --protocol tcp
 cf add-network-policy prometheus redis-metrics
-cf add-network-policy prometheus watchtower
+cf add-network-policy prometheus watchtower --protocol tcp --port 61443
