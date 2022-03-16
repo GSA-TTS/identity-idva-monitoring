@@ -5,7 +5,7 @@ datasources:
   - name: idva-cortex-data
     type: prometheus
     access: proxy
-    url: https://identity-idva-monitoring-cortex-${ENVIRONMENT_NAME}.apps.internal:$PORT/api/prom/
+    url: https://identity-idva-monitoring-cortex-${ENVIRONMENT_NAME}.apps.internal:61443/api/prom/
     isDefault: false
     editable: false
     jsonData:

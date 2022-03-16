@@ -13,7 +13,7 @@ cf add-network-policy alertmanager alertmanager --protocol udp --port 9094
 cf add-network-policy elasticsearch-metrics es-proxy
 
 # Source = Grafana
-cf add-network-policy grafana cortex
+cf add-network-policy grafana cortex --protocol tcp --port 61443
 cf add-network-policy grafana prometheus --protocol tcp --port 61443
 
 # Source = Kibana
