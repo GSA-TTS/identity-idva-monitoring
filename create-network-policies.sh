@@ -21,7 +21,7 @@ cf add-network-policy kibana es-proxy
 
 # Source = Prometheus
 cf add-network-policy prometheus alertmanager
-cf add-network-policy prometheus cf-metrics
+cf add-network-policy prometheus cf-metrics --protocol tcp --port 61443
 cf add-network-policy prometheus cortex --protocol tcp --port 61443
 cf add-network-policy prometheus grafana --port 61443 --protocol tcp
 cf add-network-policy prometheus elasticsearch-metrics --protocol tcp --port 61443
