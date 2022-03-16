@@ -30,9 +30,7 @@ rule_files:
   - "rules.yml"
 
 remote_write:
-  - url: https://identity-idva-monitoring-cortex-${ENVIRONMENT_NAME}.apps.internal:8080/api/v1/push
-    tls_config:
-      insecure_skip_verify: true
+  - url: https://identity-idva-monitoring-cortex-${ENVIRONMENT_NAME}.apps.internal:61443/api/v1/push
 
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped
@@ -65,16 +63,16 @@ scrape_configs:
       - targets: ['identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal:61443']
 
   - job_name: 'watchtower'
+    scheme: https
     static_configs:
-      - targets: ['identity-idva-monitoring-watchtower-${ENVIRONMENT_NAME}.apps.internal:8080']
+      - targets: ['identity-idva-monitoring-watchtower-${ENVIRONMENT_NAME}.apps.internal:61443']
 
   - job_name: 'redis-exporter'
     scheme: https
-    tls_config:
-      insecure_skip_verify: true
     static_configs:
-      - targets: ['identity-idva-metrics-redis-${ENVIRONMENT_NAME}.apps.internal:8080']
+      - targets: ['identity-idva-metrics-redis-${ENVIRONMENT_NAME}.apps.internal:61443']
 
   - job_name: 'elasticsearch-exporter'
+    scheme: https
     static_configs:
-      - targets: ['identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal:8080']
+      - targets: ['identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal:61443']
