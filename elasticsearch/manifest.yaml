@@ -10,4 +10,4 @@ applications:
       - binary_buildpack
     command: |
       ./install_elasticsearch_exporter.sh && \
-      ./elasticsearch_exporter --es.uri http://identity-idva-es-proxy-((ENVIRONMENT_NAME)).apps.internal:8080 --web.listen-address :8080
+      ./elasticsearch_exporter --es.uri https://identity-idva-es-proxy-((ENVIRONMENT_NAME)).apps.internal:61443 --web.listen-address :8080

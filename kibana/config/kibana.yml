@@ -29,7 +29,7 @@
 #server.name: "your-hostname"
 
 # The URLs of the Elasticsearch instances to use for all your queries.
-elasticsearch.hosts: ["http://identity-idva-es-proxy-${ENVIRONMENT_NAME}.apps.internal:8080"]
+elasticsearch.hosts: ["https://identity-idva-es-proxy-${ENVIRONMENT_NAME}.apps.internal:61443"]
 
 # Kibana uses an index in Elasticsearch to store saved searches, visualizations and
 # dashboards. Kibana creates a new index if the index doesn't already exist.
