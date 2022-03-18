@@ -27,7 +27,7 @@ groups:
           icon: 🖥️
 
       - alert: High memory utilization
-        expr: avg by (app) (avg_over_time(memory_utilization[5m])) > 80
+        expr: avg by (app) (avg_over_time(memory_utilization[5m])) > 90
         annotations:
           summary: >-
             High memory usage ({{ $value | printf "%.2f"}}%) for
