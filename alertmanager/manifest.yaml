@@ -9,11 +9,9 @@ applications:
       - binary_buildpack
     command: |
       ./install_alertmanager.sh && \
-      ./create_web_config.sh && \
       ./alertmanager --web.listen-address="0.0.0.0:$PORT" \
-          --cluster.peer="identity-idva-monitoring-alertmanager-((ENVIRONMENT_NAME)).apps.internal:9094" \
-          --web.config.file=web-config.yml \
-          --web.external-url https://identity-idva-monitoring-alertmanager-((ENVIRONMENT_NAME)).apps.internal/
+          --cluster.peer="identity-idva-monitoring-alertmanager-((ENVIRONMENT_NAME)).apps.internal:9094"
+          --web.external-url http://identity-idva-monitoring-alertmanager-((ENVIRONMENT_NAME)).apps.internal/
     env:
       SLACK_URL: ((SLACK_URL))
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
