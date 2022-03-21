@@ -15,14 +15,9 @@ alerting:
       regex: instance
 
   alertmanagers:
-    - dns_sd_configs:
-        - names:
-            - 'identity-idva-monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal'
-          type: 'A'
-          port: 8080
-      tls_config:
-        insecure_skip_verify: true
-      scheme: https
+    - scheme: https
+      static_configs:
+        - targets: ['monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal:61443']
 
 # Load rules once and periodically evaluate them according to the
 # global 'evaluation_interval'.
