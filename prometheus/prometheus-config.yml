@@ -17,7 +17,7 @@ alerting:
   alertmanagers:
     - scheme: https
       static_configs:
-        - targets: ['monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal:61443']
+        - targets: ['identity-idva-monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal:61443']
 
 # Load rules once and periodically evaluate them according to the
 # global 'evaluation_interval'.
