@@ -49,7 +49,7 @@ The following [Cloud Foundry Health Checks](https://docs.cloudfoundry.org/devgui
 | Prometheus    | http              | `/-/healthy`  | https://prometheus.io/docs/prometheus/latest/management_api/#health-check |
 | Grafana       | http              | `/api/health` | https://grafana.com/docs/grafana/latest/http_api/other/#health-api |
 | Alertmanager  | port              | N/A           | N/A |
-| Cortex        | port              | N/A           | N/A |
+| Cortex        | http              | `/ready`      | https://cortexmetrics.io/docs/api/#readiness-probe |
 | Watchtower    | http              | `/health`     | https://github.com/18F/watchtower#endpoints |
 | Kibana        | port              | N/A | N/A     |
 | Elasticsearch | http              | `/metrics`    | Elasticsearch exporter is healthy if it is serving metrics. |
