@@ -41,6 +41,20 @@ envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
 The most up-to-date information about the CI/CD flows for this repo can be found in the
 [GitHub workflows directory](https://github.com/18F/identity-idva-monitoring/tree/main/.github/workflows)
 
+## Health Checks
+The following [Cloud Foundry Health Checks](https://docs.cloudfoundry.org/devguide/deploy-apps/healthchecks.html) are configured:
+
+| App           | Check Type        | Endpoint      | Documentation |
+| --------------|-------------------|---------------|---------------|
+| Prometheus    | http              | `/-/healthy`  | https://prometheus.io/docs/prometheus/latest/management_api/#health-check |
+| Grafana       | http              | `/api/health` | https://grafana.com/docs/grafana/latest/http_api/other/#health-api |
+| Alertmanager  | port              | N/A           | N/A |
+| Cortex        | port              | N/A           | N/A |
+| Watchtower    | http              | `/health`     | https://github.com/18F/watchtower#endpoints |
+| Kibana        | port              | N/A | N/A     |
+| Elasticsearch | http              | `/metrics`    | Elasticsearch exporter is healthy if it is serving metrics. |
+| Redis         | http              | `/metrics`    | Redis exporter is healthy if it is serving metrics. |
+
 ## Public domain
 
 This project is in the worldwide [public domain](LICENSE.md). As stated in
