@@ -10,7 +10,7 @@ applications:
     command: |
       ./install_alertmanager.sh && \
       ./alertmanager --web.listen-address="0.0.0.0:$PORT" \
-          --cluster.peer="identity-idva-monitoring-alertmanager-((ENVIRONMENT_NAME)).apps.internal:9094"
+          --cluster.peer="identity-idva-monitoring-alertmanager-((ENVIRONMENT_NAME)).apps.internal:9094" \
           --web.external-url http://identity-idva-monitoring-alertmanager-((ENVIRONMENT_NAME)).apps.internal/
     env:
       SLACK_URL: ((SLACK_URL))
