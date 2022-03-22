@@ -76,3 +76,8 @@ scrape_configs:
     scheme: https
     static_configs:
       - targets: ['identity-idva-monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal:61443']
+
+  - job_name: 'cortex'
+    scheme: https
+    static_configs:
+      - targets: ['identity-idva-monitoring-cortex-${ENVIRONMENT_NAME}.apps.internal:61443']
