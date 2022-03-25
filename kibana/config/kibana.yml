@@ -1,10 +1,10 @@
 # Kibana is served by a back end server. This setting specifies the port to use.
-#server.port: 5601
+server.port: ${PORT}
 
 # Specifies the address to which the Kibana server will bind. IP addresses and host names are both valid values.
 # The default is 'localhost', which usually means remote machines will not be able to connect.
 # To allow connections from remote users, set this parameter to a non-loopback address.
-#server.host: "localhost"
+server.host: "0.0.0.0"
 
 # Enables you to specify a path to mount Kibana at if you are running behind a proxy.
 # Use the `server.rewriteBasePath` setting to tell Kibana if it should remove the basePath
@@ -63,7 +63,7 @@ elasticsearch.hosts: ["https://identity-idva-es-proxy-${ENVIRONMENT_NAME}.apps.i
 
 # Optional setting that enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
-#elasticsearch.ssl.certificateAuthorities: [ "/path/to/your/CA.pem" ]
+elasticsearch.ssl.certificateAuthorities: [ "/etc/cf-system-certificates/trusted-ca-1.crt","/etc/cf-system-certificates/trusted-ca-2.crt" ]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
 #elasticsearch.ssl.verificationMode: full
