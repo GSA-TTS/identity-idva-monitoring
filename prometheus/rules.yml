@@ -158,3 +158,35 @@ groups:
           summary: Watchtower failed when validating CF App configurations
           description: Check the Watchtower logs for failure details.
           icon: ❓
+
+  - name: ElasticsearchAlerts
+    rules:
+      - alert: High disk utilization
+        expr: elasticsearch_filesystem_data_available_bytes / elasticsearch_filesystem_data_size_bytes < 0.2 
+        annotations:
+          summary: >-
+            High Elasticsearch disk usage: ({{ $value | printf "%.2f"}}%)
+          description: >-
+            Disk usage has exceeded 80%
+          icon: 📁
+
+      - alert: High shard count
+        # num data nodes * node shard limit * 80%
+        expr: elasticsearch_cluster_health_active_shards > 3200
+        annotations:
+          summary: >-
+            High Elasticsearch shard count: {{ $value }}
+          description: >-
+            The shard count has exceeded 80% of the limit (num data nodes * node shard limit)
+          icon: 📁
+
+  - name: RedisAlerts
+    rules:
+      - alert: Large Redis Key Size
+        expr: redis_key_size > 10000 
+        annotations:
+          summary: >-
+            The Redis Key Size is {{ $value }} for {{ $labels.key }}.
+          description: >-
+            The number of events queued for the connector has exceeded 10,000
+          icon: 📊
