@@ -1,7 +1,6 @@
 ---
 applications:
   - name: kibana
-    no-route: true
     health-check-type: process
     memory: ((MEMORY))
     disk_quota: 4GB
@@ -11,5 +10,7 @@ applications:
       - binary_buildpack
     command: |
       /home/vcap/deps/0/apt/usr/share/kibana/bin/kibana --config config/kibana.yml
+    routes:
+      - route: identity-idva-monitoring-kibana-((ENVIRONMENT_NAME)).apps.internal
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
