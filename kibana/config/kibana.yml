@@ -63,7 +63,7 @@ elasticsearch.hosts: ["https://identity-idva-es-proxy-${ENVIRONMENT_NAME}.apps.i
 
 # Optional setting that enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
-#elasticsearch.ssl.certificateAuthorities: [ "/path/to/your/CA.pem" ]
+elasticsearch.ssl.certificateAuthorities: [ "/etc/cf-system-certificates/trusted-ca-1.crt","/etc/cf-system-certificates/trusted-ca-2.crt" ]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
 #elasticsearch.ssl.verificationMode: full
