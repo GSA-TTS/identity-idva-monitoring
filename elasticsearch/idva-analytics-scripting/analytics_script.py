@@ -73,7 +73,7 @@ query = {
 
 #We want to retrieve all data from dev-skevents with a timestamp at any time or more recent
 #than 5 minutes before the timestamp of the most recent data in dev-skevents-analytics-*. This
-#ensures we do not miss any data.
+#ensures that we do not miss any data.
 def get_most_recent_timestamp(flowId):
   newest_timestamp_query = {
     "query": {

@@ -15,7 +15,7 @@ To manually run the script, enter `python analytics_script.py` in the command li
 
 ### Date Range
 
-By default, the script relies on a default time range defined by 5 minutes before the most recent data in
+By default, the script relies on a time range defined by 5 minutes before the most recent data in
 the `dev-skevents-analytics-*` index pattern up to the current timestamp. However, the arguments to the
 `send_query_and_evaluate_result` function can be modified such that the date range is any desired date
 range.
