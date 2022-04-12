@@ -1,5 +1,6 @@
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
+from datetime import datetime
 from dateutil import parser
 
 es_cluster = Elasticsearch(hosts=['http://localhost:9432'])
@@ -112,7 +113,10 @@ def get_most_recent_timestamp(flowId):
   }
 
   res = es_cluster.search(index="dev-skevents-analytics-*", body=newest_timestamp_query)
-  return res["aggregations"]["types_count"]["hits"]["hits"][0]["sort"][0]
+  try:
+    return res["aggregations"]["types_count"]["hits"]["hits"][0]["sort"][0]
+  except KeyError:
+    return None
 
 #If we do not have an index of type prefix for a given date, we must create it
 def create_index_if_doesnt_exist(new_index):
@@ -138,10 +142,7 @@ def create_documents_and_send_bulk_request(buckets, source):
     #If index_to_update has not yet been created, we must do so before sending it any requests.
     create_index_if_doesnt_exist(index_to_update)
 
-    #creating the bulk request
-    bulk_request = {"index": { "_index" : index_to_update, "_id": bucket["key"]["agg"]}}
-    
-    #creating the document sent with the above bulk request
+    #creating the document, with appropriate data
     document = {
       "doc_count": bucket["doc_count"],
       "min_date": parser.parse(bucket["min"]["value_as_string"]),
@@ -151,9 +152,19 @@ def create_documents_and_send_bulk_request(buckets, source):
       "flowId": source["flowId"],
       "eventMessage": "Interaction Response Time"
     }
-    bulk_actions.append(bulk_request)
-    bulk_actions.append(document)
-  #sending the bulk requests to the Elasticsearch cluster
+
+    #creating the single bulk action along with the document, which is
+    #stored under "_source"
+    bulk_action = {
+      "_index": index_to_update,
+      "_type": "_doc",
+      "_id": bucket["key"]["agg"],
+      "_source": document,
+      "_op_type": "index"
+    }
+
+    bulk_actions.append(bulk_action)
+  #sending the bulk request to the Elasticsearch cluster
   helpers.bulk(es_cluster, bulk_actions)
 
 #Obtains necessary data for sending the Bulk API request that updates the
@@ -194,7 +205,7 @@ def process_composite_aggregation_data(query_result):
 #process all query results.
 def send_query_and_evaluate_result(es_cluster, query, flowId, num_composite_buckets, dateStart, dateEnd=None):
   #setting the number of buckets we want to view at a time for the composite aggregation
-  query["query"]["aggs"]["my_buckets"]["composite"]["size"] = num_composite_buckets
+  query["aggs"]["my_buckets"]["composite"]["size"] = num_composite_buckets
 
   #querying the flow with the specified flowId
   query["query"]["bool"]["must"][0]["match_phrase"]["flowId"] = {"query" : flowId}
@@ -222,12 +233,15 @@ def send_query_and_evaluate_result(es_cluster, query, flowId, num_composite_buck
   #If the number of buckets in the composite aggregation is less than the specified
   #num_composite_buckets, then there are no more buckets that need to be processed,
   #so we just process the result of the query and are finished once that is done.
-  if len(query_result["aggregations"]["my_buckets"]["buckets"] > 0):
+  if len(query_result["aggregations"]["my_buckets"]["buckets"]) > 0:
     process_composite_aggregation_data(query_result)
 
 flowId = "t035KrLTyPv3jJao4jzwRrSzyV2gU1oK"
-dateStart = get_most_recent_timestamp(flowId) - 300000
-send_query_and_evaluate_result(es_cluster, query, flowId, 10, dateStart)
 
-#What to do for all previous days, for data created prior to this script being run for the first time?
-#edge case: flow starts on one day and ends on another
+dateStart = get_most_recent_timestamp(flowId)
+if dateStart is None:
+  dateStart = int(datetime.now().timestamp()) - 300000
+else:
+  dateStart = dateStart - 300000
+
+send_query_and_evaluate_result(es_cluster, query, flowId, 10, dateStart)
