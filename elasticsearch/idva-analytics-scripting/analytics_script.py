@@ -142,7 +142,7 @@ def create_documents_and_send_bulk_request(buckets, source):
     #If index_to_update has not yet been created, we must do so before sending it any requests.
     create_index_if_doesnt_exist(index_to_update)
 
-    #creating the document, with appropriate data
+    #creating the document that is sent with the bulk request and added to the index_to_update index
     document = {
       "doc_count": bucket["doc_count"],
       "min_date": parser.parse(bucket["min"]["value_as_string"]),
