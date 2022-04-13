@@ -3,7 +3,7 @@ from elasticsearch import helpers
 from datetime import datetime
 from dateutil import parser
 
-es_cluster = Elasticsearch(hosts=['http://localhost:9432'])
+es = Elasticsearch(hosts=['http://localhost:9432'])
 
 query = {
 	"query": {
@@ -73,7 +73,7 @@ query = {
 }
 
 #We want to retrieve all data from dev-skevents with a timestamp at any time or more recent
-#than 5 minutes before the timestamp of the most recent data in dev-skevents-analytics-*. This
+#than 5 minutes before the timestamp of the most recent data in dev-analytics-*. This
 #ensures that we do not miss any data.
 def get_most_recent_timestamp(flowId):
   newest_timestamp_query = {
@@ -112,7 +112,7 @@ def get_most_recent_timestamp(flowId):
     }
   }
 
-  res = es_cluster.search(index="dev-skevents-analytics-*", body=newest_timestamp_query)
+  res = es.search(index="dev-analytics-*", body=newest_timestamp_query)
   try:
     return res["aggregations"]["types_count"]["hits"]["hits"][0]["sort"][0]
   except KeyError:
@@ -120,8 +120,8 @@ def get_most_recent_timestamp(flowId):
 
 #If we do not have an index of type prefix for a given date, we must create it
 def create_index_if_doesnt_exist(new_index):
-  if not es_cluster.indices.exists(new_index):
-    es_cluster.indices.create(index=new_index)
+  if not es.indices.exists(new_index):
+    es.indices.create(index=new_index)
 
 #Given the buckets returned from the composite aggregation query, fetch the appropriate data
 #from each bucket, create an elasticsearch document using that data, and create the single
@@ -137,7 +137,7 @@ def create_documents_and_send_bulk_request(buckets, source):
     #by the latest date (max_date) of which the interactionId appears. The index is defined by index_to_update
     #and is determined by max_date.
     max_date = parser.parse(bucket["max"]["value_as_string"])
-    index_to_update = "dev-skevents-analytics-%s" % max_date.strftime('%Y.%m.%d')
+    index_to_update = "dev-analytics-%s" % max_date.strftime('%Y.%m.%d')
 
     #If index_to_update has not yet been created, we must do so before sending it any requests.
     create_index_if_doesnt_exist(index_to_update)
@@ -165,7 +165,7 @@ def create_documents_and_send_bulk_request(buckets, source):
 
     bulk_actions.append(bulk_action)
   #sending the bulk request to the Elasticsearch cluster
-  helpers.bulk(es_cluster, bulk_actions)
+  helpers.bulk(es, bulk_actions)
 
 #Obtains necessary data for sending the Bulk API request that updates the
 #appropriate indices with the new data. Then prepares for obtaining the next
@@ -203,7 +203,7 @@ def process_composite_aggregation_data(query_result):
 #specify date range for send_query_and_evaluate_result()? would potentially need the lte in the tsEms range
 #Sends the elasticsearch query and calls on a separate function to
 #process all query results.
-def send_query_and_evaluate_result(es_cluster, query, flowId, num_composite_buckets, dateStart, dateEnd=None):
+def send_query_and_evaluate_result(es, query, flowId, num_composite_buckets, dateStart, dateEnd=None):
   #setting the number of buckets we want to view at a time for the composite aggregation
   query["aggs"]["my_buckets"]["composite"]["size"] = num_composite_buckets
 
@@ -219,7 +219,7 @@ def send_query_and_evaluate_result(es_cluster, query, flowId, num_composite_buck
     query["query"]["bool"]["must"][1]["range"]["tsEms"]["lte"] = dateEnd
 
   #running the query against dev-skevents in elasticsearch
-  query_result = es_cluster.search(index="dev-skevents-*", body=query)
+  query_result = es.search(index="dev-skevents-*", body=query)
 
   #len(query_result["aggregations"]["my_buckets"]["buckets"]) is the number of buckets
   #in the composite aggregation. If the number of buckets in the composite aggregation
@@ -228,7 +228,7 @@ def send_query_and_evaluate_result(es_cluster, query, flowId, num_composite_buck
   #be run.
   while len(query_result["aggregations"]["my_buckets"]["buckets"]) == num_composite_buckets:
     process_composite_aggregation_data(query_result)
-    query_result = es_cluster.search(index="dev-skevents-*", body=query)
+    query_result = es.search(index="dev-skevents-*", body=query)
 
   #If the number of buckets in the composite aggregation is less than the specified
   #num_composite_buckets, then there are no more buckets that need to be processed,
@@ -244,4 +244,4 @@ if dateStart is None:
 else:
   dateStart = dateStart - 300000
 
-send_query_and_evaluate_result(es_cluster, query, flowId, 10, dateStart)
+send_query_and_evaluate_result(es, query, flowId, 10, dateStart)
