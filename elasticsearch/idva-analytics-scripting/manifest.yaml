@@ -1,0 +1,7 @@
+---
+applications:
+  - name: analytics-scripting
+    buildpacks:
+      - binary_buildpack
+    no-route: true
+    command: python3 analytics_script.py
