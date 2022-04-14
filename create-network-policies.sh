@@ -28,3 +28,6 @@ cf add-network-policy prometheus elasticsearch-metrics --protocol tcp --port 614
 cf add-network-policy prometheus kong                  --protocol tcp --port 8100
 cf add-network-policy prometheus redis-metrics         --protocol tcp --port 61443
 cf add-network-policy prometheus watchtower            --protocol tcp --port 61443
+
+# Source = Analytics Scripting
+cf add-network-policy analytics-scripting es-proxy --protocol tcp --port 61443

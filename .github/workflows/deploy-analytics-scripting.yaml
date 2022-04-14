@@ -1,0 +1,25 @@
+---
+name: Deploy Analytics Scripting
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: 18F/identity-idva-cf-setup@v2
+        with:
+          cf-username: ${{ secrets.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+          cf-org: ${{ secrets.CF_ORG }}
+
+      - name: Deploy Analytics Script
+        run: cf push
+        working-directory: ./analytics-scripting
+
+      - name: Apply Network Policies
+        run: ./create-network-policies.sh
