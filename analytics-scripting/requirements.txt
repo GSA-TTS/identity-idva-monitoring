@@ -1,0 +1,2 @@
+elasticsearch==7.1.0
+python-dateutil

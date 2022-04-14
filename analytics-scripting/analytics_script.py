@@ -2,8 +2,9 @@ from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 from datetime import datetime
 from dateutil import parser
+import sys
 
-es = Elasticsearch(hosts=['http://localhost:9432'])
+es = Elasticsearch(hosts=[sys.argv[1]])
 
 query = {
 	"query": {
@@ -244,4 +245,5 @@ if dateStart is None:
 else:
   dateStart = dateStart - 300000
 
+print(sys.argv[1])
 send_query_and_evaluate_result(es, query, flowId, 10, dateStart)

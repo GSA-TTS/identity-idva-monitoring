@@ -1,0 +1,8 @@
+---
+applications:
+  - name: analytics-scripting
+    buildpacks:
+      - python_buildpack
+    no-route: true
+    command: |
+      python3 analytics_script.py http://identity-idva-es-proxy-dev.apps.internal
