@@ -9,9 +9,9 @@ applications:
     health-check-http-endpoint: /health
     buildpacks:
       - binary_buildpack
-    command: |
-      ./install_watchtower.sh && \
-      ./watchtower
+    services:
+      - outbound-proxy
+    command: ./watchtower
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
       CF_USER: ((CF_USER))

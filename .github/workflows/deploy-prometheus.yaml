@@ -44,3 +44,5 @@ jobs:
 
       - name: Apply CF Network Policies
         run: ./create-network-policies.sh
+        env:
+          ENVIRONMENT_NAME: ${{ steps.cf-setup.outputs.target-environment }}
