@@ -9,6 +9,8 @@ applications:
     health-check-http-endpoint: /health
     buildpacks:
       - binary_buildpack
+    services:
+      - outbound-proxy
     command: |
       ./install_watchtower.sh && \
       ./watchtower
