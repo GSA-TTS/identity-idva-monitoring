@@ -8,6 +8,8 @@ applications:
     buildpacks:
       - https://github.com/cloudfoundry/apt-buildpack
       - binary_buildpack
+    health-check-type: http
+    health-check-http-endpoint: /-/healthy
     command: |
       envsubst < prometheus-config.yml > prometheus.yml
       ./prometheus \

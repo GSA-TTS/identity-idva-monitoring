@@ -8,6 +8,8 @@ applications:
       - route: identity-idva-metrics-redis-((ENVIRONMENT_NAME)).apps.internal
     buildpacks:
       - binary_buildpack
+    health-check-type: http
+    health-check-http-endpoint: /metrics
     command: |
       ./install_redis_exporter.sh && \
       ./redis_exporter --web.listen-address 0.0.0.0:8080 \

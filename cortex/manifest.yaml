@@ -7,6 +7,8 @@ applications:
     instances: ((INSTANCES))
     buildpacks:
       - binary_buildpack
+    health-check-type: http
+    health-check-http-endpoint: /ready
     services:
       - prometheus-storage
     command: |
