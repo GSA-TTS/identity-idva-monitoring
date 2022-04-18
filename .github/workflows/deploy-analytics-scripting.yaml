@@ -20,6 +20,3 @@ jobs:
       - name: Deploy Analytics Script
         run: cf push
         working-directory: ./analytics-scripting
-
-      - name: Apply Network Policies
-        run: ./create-network-policies.sh
