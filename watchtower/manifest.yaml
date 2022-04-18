@@ -11,9 +11,7 @@ applications:
       - binary_buildpack
     services:
       - outbound-proxy
-    command: |
-      ./install_watchtower.sh && \
-      ./watchtower
+    command: ./watchtower
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
       CF_USER: ((CF_USER))
