@@ -86,7 +86,7 @@ def create_documents_and_send_bulk_request(buckets, source):
 
         # The document, identified by its interactionId, created from the current bucket belongs in the index defined
         # by the latest date (max_date) of which the interactionId appears. The index is defined by index_to_update
-        # and is determined by max_date.{{
+        # and is determined by max_date.
         max_date = parser.parse(bucket["max"]["value_as_string"])
         index_to_update = f"dev-analytics-{max_date.strftime('%Y.%m.%d')}"
 
@@ -116,17 +116,7 @@ def create_documents_and_send_bulk_request(buckets, source):
 
         bulk_actions.append(bulk_action)
     # sending the bulk request to Elasticsearch
-    (_, errors) = helpers.bulk(es, bulk_actions, raise_on_error = False)
-    if len(errors) > 0:
-      for error in errors:
-        type = error['index']['error']['type']
-        #document_missing_exception
-        #cluster_block_exception - trying to update a read-only block
-        #illegal_argument_exception - index with improper document mappings
-        #index_not_found_exception
-        #version_conflict_engine_exception
-        #circuit_breaking_exception
-        #mapper_parsing_exception
+    helpers.bulk(es, bulk_actions)
 
 
 # Obtains necessary data for sending the Bulk API request that updates the
