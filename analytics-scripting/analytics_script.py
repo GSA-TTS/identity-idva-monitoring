@@ -222,9 +222,9 @@ def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, arg
         process_composite_aggregation_data(query_result)
 
 cmd_line_parser = argparse.ArgumentParser()
-cmd_line_parser.add_argument("--startDate")
-cmd_line_parser.add_argument("--endDate")
-cmd_line_parser.add_argument("--flowId")
+cmd_line_parser.add_argument("--start_date")
+cmd_line_parser.add_argument("--end_date")
+cmd_line_parser.add_argument("--flow_id")
 
 send_query_and_evaluate_result(
     elasticsearch,
