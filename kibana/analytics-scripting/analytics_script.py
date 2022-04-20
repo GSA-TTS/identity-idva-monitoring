@@ -5,7 +5,6 @@ and placing the result in the dev-analytics-* index pattern for further visualiz
 
 import argparse
 from datetime import datetime, timedelta
-import sys
 from dateutil import parser
 from opensearchpy import OpenSearch, helpers
 
@@ -41,8 +40,11 @@ query_avg_response_time = {
     },
 }
 
-def add_keys_if_not_exist(dict, keys):
-    curr_dict = dict
+def add_keys_if_not_exist(dictionary, keys):
+    """
+    Adds keys, in a nested format, to the dictionary if the keys do not exist.
+    """
+    curr_dict = dictionary
     for key in keys:
         curr_dict.setdefault(key, {})
         curr_dict = curr_dict[key]
@@ -144,7 +146,7 @@ def process_composite_aggregation_data(query_result):
     """
     buckets = query_result["aggregations"]["my_buckets"]["buckets"]
     source = query_result["aggregations"]["hits"]["hits"]["hits"][0]["_source"]
-    
+
     create_documents_and_send_bulk_request(buckets, source)
     # Composite aggregation queries only return a specified number of buckets,
     # num_composite_buckets in our case. The ordering of the buckets in the
@@ -176,7 +178,7 @@ def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, arg
         if not elasticsearch.indices.get_alias("dev-skanalytics-*"):
             # The dev-skanalytics index doesn't exist, so we want 5 minutes before the current time
             start_date = int((datetime.now() - FIVE_MINS).timestamp())
-            
+
         else:
             start_date = get_most_recent_timestamp()
 
@@ -240,7 +242,7 @@ cmd_line_parser.add_argument("--flow_id")
 arguments = cmd_line_parser.parse_args()
 
 elasticsearch = OpenSearch(hosts = [{'host' : arguments.host, 'port': arguments.port}])
-#elasticsearch = OpenSearch(hosts = [{'host' : 'localhost', 'port': 9432}])
+
 send_query_and_evaluate_result(
     elasticsearch,
     query_avg_response_time,
