@@ -157,17 +157,8 @@ def process_composite_aggregation_data(query_result):
     query_composite = query_avg_response_time["aggs"]["my_buckets"]["composite"]
     after_key = query_result["aggregations"]["my_buckets"]["after_key"]["agg"]
 
-    if "after" in query_composite:
-        # Updating the bucket idenifier in the composite["after"] section
-        # of the query. This tells elasticsearch to return the next
-        # num_composite_buckets in the ordering of the buckets in the
-        # composite aggregation results, which appear after the bucket
-        # with key after_key.
-        query_composite["agg"] = after_key
-    else:
-        # The first time we run the query, the composite["after"] section
-        # does not exist, so we must create it.
-        query_composite["after"] = {"agg": after_key}
+    query_composite.setdefault("after", {})
+    query_composite["after"] = {"agg": after_key}
 
 def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, args):
     """
