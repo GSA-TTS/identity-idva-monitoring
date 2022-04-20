@@ -13,10 +13,6 @@ DEFAULT_FLOW_ID = "t035KrLTyPv3jJao4jzwRrSzyV2gU1oK"
 DEFAULT_NUM_COMPOSITE_BUCKETS = 10
 FIVE_MINS = timedelta(minutes=5)
 
-elasticsearch = OpenSearch(
-  hosts = [{'host' : sys.argv[1], 'port': sys.argv[2]}]
-)
-
 query_avg_response_time = {
     "query": {
         "bool": {
@@ -148,8 +144,8 @@ def process_composite_aggregation_data(query_result):
     """
     buckets = query_result["aggregations"]["my_buckets"]["buckets"]
     source = query_result["aggregations"]["hits"]["hits"]["hits"][0]["_source"]
+    
     create_documents_and_send_bulk_request(buckets, source)
-
     # Composite aggregation queries only return a specified number of buckets,
     # num_composite_buckets in our case. The ordering of the buckets in the
     # composite query is done by the "sources" property. Each time a composite
@@ -177,7 +173,12 @@ def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, arg
     try:
         start_date = int(parser.parse(args.startDate).timestamp())
     except AttributeError:
-        start_date = get_most_recent_timestamp()
+        if not elasticsearch.indices.get_alias("dev-skanalytics-*"):
+            # The dev-skanalytics index doesn't exist, so we want 5 minutes before the current time
+            start_date = int((datetime.now() - FIVE_MINS).timestamp())
+            
+        else:
+            start_date = get_most_recent_timestamp()
 
     try:
         end_date = int(parser.parse(args.endDate).timestamp())
@@ -208,11 +209,11 @@ def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, arg
     must[1]["range"]["tsEms"] = {
         "gte": start_date,
         "lte": end_date,
+        "format": "epoch_second",
     }
 
     # running the query against dev-skevents in elasticsearch
     query_result = es_cluster.search(index="dev-skevents-*", body=query)
-
     # len(query_result["aggregations"]["my_buckets"]["buckets"]) is the number of buckets
     # in the composite aggregation. If the number of buckets in the composite aggregation
     # is equal to the specified num_composite_buckets, then there could still be more
@@ -227,17 +228,22 @@ def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, arg
     # If the number of buckets in the composite aggregation is less than the specified
     # num_composite_buckets, then there are no more buckets that need to be processed,
     # so we just process the result of the query and are finished once that is done.
-    if not query_result["aggregations"]["my_buckets"]["buckets"]:
+    if query_result["aggregations"]["my_buckets"]["buckets"]:
         process_composite_aggregation_data(query_result)
 
 cmd_line_parser = argparse.ArgumentParser()
+cmd_line_parser.add_argument("--host")
+cmd_line_parser.add_argument("--port")
 cmd_line_parser.add_argument("--start_date")
 cmd_line_parser.add_argument("--end_date")
 cmd_line_parser.add_argument("--flow_id")
+arguments = cmd_line_parser.parse_args()
 
+elasticsearch = OpenSearch(hosts = [{'host' : arguments.host, 'port': arguments.port}])
+#elasticsearch = OpenSearch(hosts = [{'host' : 'localhost', 'port': 9432}])
 send_query_and_evaluate_result(
     elasticsearch,
     query_avg_response_time,
     DEFAULT_NUM_COMPOSITE_BUCKETS,
-    cmd_line_parser.parse_args()
+    arguments
 )
