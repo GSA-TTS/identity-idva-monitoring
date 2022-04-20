@@ -45,6 +45,12 @@ query_avg_response_time = {
     },
 }
 
+def add_keys_if_not_exist(dict, keys):
+    curr_dict = dict
+    for key in keys:
+        curr_dict.setdefault(key, {})
+        curr_dict = curr_dict[key]
+
 def get_most_recent_timestamp(flow_id=DEFAULT_FLOW_ID):
     """
     We want to retrieve all data from dev-skevents with a timestamp at any time or more recent
@@ -184,13 +190,22 @@ def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, arg
         flow_id = DEFAULT_FLOW_ID
 
     # setting the number of buckets we want to view at a time for the composite aggregation
+    add_keys_if_not_exist(query, ["aggs","my_buckets", "composite", "size"])
     query["aggs"]["my_buckets"]["composite"]["size"] = num_composite_buckets
 
+    # adding keys if they do not exist, preventing any KeyErrors
+    add_keys_if_not_exist(query, ["query","bool"])
+    query["query"]["bool"].setdefault("must", [{},{}])
+
+    must = query["query"]["bool"]["must"]
+    add_keys_if_not_exist(must[0], ["match_phrase", "flowId"])
+    add_keys_if_not_exist(must[1], ["range", "tsEms"])
+
     # querying the flow with the specified flowId
-    query["query"]["bool"]["must"][0]["match_phrase"]["flowId"] = {"query": flow_id}
+    must[0]["match_phrase"]["flowId"] = {"query": flow_id}
 
     # specifying a date range for the query
-    query["query"]["bool"]["must"][1]["range"]["tsEms"] = {
+    must[1]["range"]["tsEms"] = {
         "gte": start_date,
         "lte": end_date,
     }
