@@ -1,15 +1,13 @@
 ---
-name: Deploy Analytics Scripting
+name: Run Analytics Scripting
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - analytics-scripting/analytics_script.py
+  schedule:
+  - cron: */5 * * * *
 
 jobs:
   deploy:
+    if: github.repository_owner == '18F'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -20,7 +18,7 @@ jobs:
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
 
-      - name: Create task for analytics scripting
+      - name: Run task for analytics scripting
         run: |
-          cd analytics-scripting 
-          cf push --task
+          cd kibana/analytics-scripting 
+          cf run-task kibana --name analytics-scripting
