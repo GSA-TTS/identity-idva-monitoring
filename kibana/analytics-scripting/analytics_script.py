@@ -4,16 +4,14 @@ and placing the result in the dev-analytics-* index pattern for further visualiz
 """
 
 import argparse
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 from dateutil import parser
 from opensearchpy import OpenSearch, helpers
 
 DEFAULT_FLOW_ID = "t035KrLTyPv3jJao4jzwRrSzyV2gU1oK"
 DEFAULT_NUM_COMPOSITE_BUCKETS = 10
-# 300000 represents 5 minutes, and by default we want to grab data with a timestamp at least
-# 5 minutes prior to the most recent data in the analytics indices.
-DEFAULT_TIME_RANGE = 300000
+FIVE_MINS = timedelta(minutes=5)
 
 elasticsearch = OpenSearch(
   hosts = [{'host' : sys.argv[1], 'port': sys.argv[2]}]
@@ -71,9 +69,14 @@ def get_most_recent_timestamp(flow_id=DEFAULT_FLOW_ID):
 
     res = elasticsearch.search(index="dev-analytics-*", body=newest_timestamp_query)
     try:
-        return res["aggregations"]["types_count"]["hits"]["hits"][0]["sort"][0] - DEFAULT_TIME_RANGE
+        most_recent_timestamp = parser.parse(
+            res["aggregations"]["types_count"]["hits"]["hits"][0]["_source"]["tsEms"]
+        )
+        five_mins_prior = most_recent_timestamp - FIVE_MINS
+        return int(five_mins_prior.timestamp())
     except KeyError:
-        return int(datetime.now().timestamp()) - DEFAULT_TIME_RANGE
+        current_timestamp = (datetime.now() - FIVE_MINS).timestamp()
+        return int(current_timestamp)
 
 def create_index_if_doesnt_exist(new_index):
     """
