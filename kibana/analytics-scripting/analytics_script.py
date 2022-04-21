@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 from dateutil import parser
 from opensearchpy import OpenSearch, helpers
 
-DEFAULT_FLOW_ID = "t035KrLTyPv3jJao4jzwRrSzyV2gU1oK"
+ANALYTICS_INDEX_PATTERN = "dev-skanalytics-*"
+SK_INDEX_PATTERN = "dev-skevents-*"
 DEFAULT_NUM_COMPOSITE_BUCKETS = 10
 FIVE_MINS = timedelta(minutes=5)
 
@@ -40,7 +41,7 @@ query_avg_response_time = {
     },
 }
 
-def add_keys_if_not_exist(dictionary, keys):
+def add_keys_if_not_exist(dictionary: dict, keys: list):
     """
     Adds keys, in a nested format, to the dictionary if the keys do not exist.
     """
@@ -49,7 +50,7 @@ def add_keys_if_not_exist(dictionary, keys):
         curr_dict.setdefault(key, {})
         curr_dict = curr_dict[key]
 
-def get_most_recent_timestamp(flow_id=DEFAULT_FLOW_ID):
+def get_most_recent_timestamp(flow_id: str):
     """
     We want to retrieve all data from dev-skevents with a timestamp at any time or more recent
     than 5 minutes before the timestamp of the most recent data in dev-analytics-*. This
@@ -71,7 +72,7 @@ def get_most_recent_timestamp(flow_id=DEFAULT_FLOW_ID):
         },
     }
 
-    res = elasticsearch.search(index="dev-analytics-*", body=newest_timestamp_query)
+    res = elasticsearch.search(index=ANALYTICS_INDEX_PATTERN, body=newest_timestamp_query)
     try:
         most_recent_timestamp = parser.parse(
             res["aggregations"]["types_count"]["hits"]["hits"][0]["_source"]["tsEms"]
@@ -82,14 +83,14 @@ def get_most_recent_timestamp(flow_id=DEFAULT_FLOW_ID):
         current_timestamp = (datetime.now() - FIVE_MINS).timestamp()
         return int(current_timestamp)
 
-def create_index_if_doesnt_exist(new_index):
+def create_index_if_doesnt_exist(new_index: str):
     """
     If we do not have an index of type prefix for a given date, we must create it.
     """
     if not elasticsearch.indices.exists(new_index):
         elasticsearch.indices.create(index=new_index)
 
-def create_documents_and_send_bulk_request(buckets, source):
+def create_documents_and_send_bulk_request(buckets: list, source: dict):
     """
     Given the buckets returned from the composite aggregation query, fetch the appropriate data
     from each bucket, create an elasticsearch document using that data, and create the single
@@ -138,7 +139,7 @@ def create_documents_and_send_bulk_request(buckets, source):
     # sending the bulk request to Elasticsearch
     helpers.bulk(elasticsearch, bulk_actions)
 
-def process_composite_aggregation_data(query_result):
+def process_composite_aggregation_data(query_result: dict):
     """
     Obtains necessary data for sending the Bulk API request that updates the
     appropriate indices with the new data. Then prepares for obtaining the next
@@ -167,30 +168,27 @@ def process_composite_aggregation_data(query_result):
     query_composite.setdefault("after", {})
     query_composite["after"] = {"agg": after_key}
 
-def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, args):
+def send_query_and_evaluate_result(es_cluster: OpenSearch, query: dict, num_composite_buckets: int, args: argparse.ArgumentParser):
     """
     Prepares query of Elasticsearch data for a given time range, sends the query, and
     processes each bucket of the query result in a separate function.
     """
+    #Raises an AttributeError if not provided
+    flow_id = args.flowId
+
     try:
         start_date = int(parser.parse(args.startDate).timestamp())
     except AttributeError:
-        if not elasticsearch.indices.get_alias("dev-skanalytics-*"):
+        if not elasticsearch.indices.get_alias(ANALYTICS_INDEX_PATTERN):
             # The dev-skanalytics index doesn't exist, so we want 5 minutes before the current time
             start_date = int((datetime.now() - FIVE_MINS).timestamp())
-
         else:
-            start_date = get_most_recent_timestamp()
+            start_date = get_most_recent_timestamp(flow_id)
 
     try:
         end_date = int(parser.parse(args.endDate).timestamp())
     except AttributeError:
         end_date = int(datetime.now().timestamp())
-
-    try:
-        flow_id = args.flowId
-    except AttributeError:
-        flow_id = DEFAULT_FLOW_ID
 
     # setting the number of buckets we want to view at a time for the composite aggregation
     add_keys_if_not_exist(query, ["aggs","my_buckets", "composite", "size"])
@@ -215,7 +213,7 @@ def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, arg
     }
 
     # running the query against dev-skevents in elasticsearch
-    query_result = es_cluster.search(index="dev-skevents-*", body=query)
+    query_result = es_cluster.search(index=SK_INDEX_PATTERN, body=query)
     # len(query_result["aggregations"]["my_buckets"]["buckets"]) is the number of buckets
     # in the composite aggregation. If the number of buckets in the composite aggregation
     # is equal to the specified num_composite_buckets, then there could still be more
@@ -225,7 +223,7 @@ def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, arg
         len(query_result["aggregations"]["my_buckets"]["buckets"]) == num_composite_buckets
     ):
         process_composite_aggregation_data(query_result)
-        query_result = es_cluster.search(index="dev-skevents-*", body=query)
+        query_result = es_cluster.search(index=SK_INDEX_PATTERN, body=query)
 
     # If the number of buckets in the composite aggregation is less than the specified
     # num_composite_buckets, then there are no more buckets that need to be processed,
@@ -236,9 +234,9 @@ def send_query_and_evaluate_result(es_cluster, query, num_composite_buckets, arg
 cmd_line_parser = argparse.ArgumentParser()
 cmd_line_parser.add_argument("--host")
 cmd_line_parser.add_argument("--port")
+cmd_line_parser.add_argument("--flow_id")
 cmd_line_parser.add_argument("--start_date")
 cmd_line_parser.add_argument("--end_date")
-cmd_line_parser.add_argument("--flow_id")
 arguments = cmd_line_parser.parse_args()
 
 elasticsearch = OpenSearch(hosts = [{'host' : arguments.host, 'port': arguments.port}])
