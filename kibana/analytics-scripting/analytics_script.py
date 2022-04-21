@@ -168,7 +168,12 @@ def process_composite_aggregation_data(query_result: dict):
     query_composite.setdefault("after", {})
     query_composite["after"] = {"agg": after_key}
 
-def send_query_and_evaluate_result(es_cluster: OpenSearch, query: dict, num_composite_buckets: int, args: argparse.ArgumentParser):
+def send_query_and_evaluate_result(
+    es_cluster: OpenSearch,
+    query: dict,
+    num_composite_buckets: int,
+    args: argparse.ArgumentParser
+):
     """
     Prepares query of Elasticsearch data for a given time range, sends the query, and
     processes each bucket of the query result in a separate function.
