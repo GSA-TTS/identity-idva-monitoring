@@ -42,8 +42,6 @@ scrape_configs:
         type: 'A'
         port: 8100
     scheme: https
-    tls_config:
-      insecure_skip_verify: true
 
   - job_name: 'cf-metrics'
     scheme: https
