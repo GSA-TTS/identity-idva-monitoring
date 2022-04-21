@@ -14,3 +14,9 @@ applications:
       - route: identity-idva-monitoring-kibana-((ENVIRONMENT_NAME)).apps.internal
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
+  - name: analytics-scripting
+    buildpacks:
+      - python_buildpack
+    no-route: true
+    command: |
+      python3 analytics_scripting/analytics_script.py https://identity-idva-es-proxy-dev.apps.internal 61443
