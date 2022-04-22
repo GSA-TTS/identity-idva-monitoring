@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from dateutil import parser
 from opensearchpy import OpenSearch, helpers
 
-ANALYTICS_INDEX_PATTERN = "dev-skanalytics-*"
+ANALYTICS_INDEX_PATTERN = "dev-analytics"
 SK_INDEX_PATTERN = "dev-skevents-*"
 DEFAULT_NUM_COMPOSITE_BUCKETS = 10
 FIVE_MINS = timedelta(minutes=5)
@@ -41,6 +41,7 @@ query_avg_response_time = {
     },
 }
 
+
 def add_keys_if_not_exist(dictionary: dict, keys: list):
     """
     Adds keys, in a nested format, to the dictionary if the keys do not exist.
@@ -49,6 +50,7 @@ def add_keys_if_not_exist(dictionary: dict, keys: list):
     for key in keys:
         curr_dict.setdefault(key, {})
         curr_dict = curr_dict[key]
+
 
 def get_most_recent_timestamp(flow_id: str):
     """
@@ -72,7 +74,9 @@ def get_most_recent_timestamp(flow_id: str):
         },
     }
 
-    res = elasticsearch.search(index=ANALYTICS_INDEX_PATTERN, body=newest_timestamp_query)
+    res = elasticsearch.search(
+        index=f"{ANALYTICS_INDEX_PATTERN}-*", body=newest_timestamp_query
+    )
     try:
         most_recent_timestamp = parser.parse(
             res["aggregations"]["types_count"]["hits"]["hits"][0]["_source"]["tsEms"]
@@ -83,12 +87,14 @@ def get_most_recent_timestamp(flow_id: str):
         current_timestamp = (datetime.now() - FIVE_MINS).timestamp()
         return int(current_timestamp)
 
+
 def create_index_if_doesnt_exist(new_index: str):
     """
     If we do not have an index of type prefix for a given date, we must create it.
     """
     if not elasticsearch.indices.exists(new_index):
         elasticsearch.indices.create(index=new_index)
+
 
 def create_documents_and_send_bulk_request(buckets: list, source: dict):
     """
@@ -107,7 +113,7 @@ def create_documents_and_send_bulk_request(buckets: list, source: dict):
         # in the index defined by the latest date (max_date) of which the interactionId appears.
         # The index is defined by index_to_update and is determined by max_date.
         max_date = parser.parse(bucket["max"]["value_as_string"])
-        index_to_update = f"dev-analytics-{max_date.strftime('%Y.%m.%d')}"
+        index_to_update = f"{ANALYTICS_INDEX_PATTERN}-{max_date.strftime('%Y.%m.%d')}"
 
         # If index_to_update has not yet been created, we must do so before sending it any
         # requests.
@@ -139,6 +145,7 @@ def create_documents_and_send_bulk_request(buckets: list, source: dict):
     # sending the bulk request to Elasticsearch
     helpers.bulk(elasticsearch, bulk_actions)
 
+
 def process_composite_aggregation_data(query_result: dict):
     """
     Obtains necessary data for sending the Bulk API request that updates the
@@ -168,24 +175,25 @@ def process_composite_aggregation_data(query_result: dict):
     query_composite.setdefault("after", {})
     query_composite["after"] = {"agg": after_key}
 
+
 def send_query_and_evaluate_result(
     es_cluster: OpenSearch,
     query: dict,
     num_composite_buckets: int,
-    args: argparse.ArgumentParser
+    args: argparse.ArgumentParser,
 ):
     """
     Prepares query of Elasticsearch data for a given time range, sends the query, and
     processes each bucket of the query result in a separate function.
     """
-    #Raises an AttributeError if not provided
+    # Raises an AttributeError if not provided
     flow_id = args.flowId
 
     try:
         start_date = int(parser.parse(args.startDate).timestamp())
     except AttributeError:
-        if not elasticsearch.indices.get_alias(ANALYTICS_INDEX_PATTERN):
-            # The dev-skanalytics index doesn't exist, so we want 5 minutes before the current time
+        if not elasticsearch.indices.get_alias(f"{ANALYTICS_INDEX_PATTERN}-*"):
+            # The dev-analytics index doesn't exist, so we want 5 minutes before the current time
             start_date = int((datetime.now() - FIVE_MINS).timestamp())
         else:
             start_date = get_most_recent_timestamp(flow_id)
@@ -196,12 +204,12 @@ def send_query_and_evaluate_result(
         end_date = int(datetime.now().timestamp())
 
     # setting the number of buckets we want to view at a time for the composite aggregation
-    add_keys_if_not_exist(query, ["aggs","my_buckets", "composite", "size"])
+    add_keys_if_not_exist(query, ["aggs", "my_buckets", "composite", "size"])
     query["aggs"]["my_buckets"]["composite"]["size"] = num_composite_buckets
 
     # adding keys if they do not exist, preventing any KeyErrors
-    add_keys_if_not_exist(query, ["query","bool"])
-    query["query"]["bool"].setdefault("must", [{},{}])
+    add_keys_if_not_exist(query, ["query", "bool"])
+    query["query"]["bool"].setdefault("must", [{}, {}])
 
     must = query["query"]["bool"]["must"]
     add_keys_if_not_exist(must[0], ["match_phrase", "flowId"])
@@ -225,7 +233,8 @@ def send_query_and_evaluate_result(
     # composite aggregation buckets that need to be processed and so more queries must
     # be run.
     while (
-        len(query_result["aggregations"]["my_buckets"]["buckets"]) == num_composite_buckets
+        len(query_result["aggregations"]["my_buckets"]["buckets"])
+        == num_composite_buckets
     ):
         process_composite_aggregation_data(query_result)
         query_result = es_cluster.search(index=SK_INDEX_PATTERN, body=query)
@@ -236,6 +245,7 @@ def send_query_and_evaluate_result(
     if query_result["aggregations"]["my_buckets"]["buckets"]:
         process_composite_aggregation_data(query_result)
 
+
 cmd_line_parser = argparse.ArgumentParser()
 cmd_line_parser.add_argument("--host")
 cmd_line_parser.add_argument("--port")
@@ -244,11 +254,8 @@ cmd_line_parser.add_argument("--start_date")
 cmd_line_parser.add_argument("--end_date")
 arguments = cmd_line_parser.parse_args()
 
-elasticsearch = OpenSearch(hosts = [{'host' : arguments.host, 'port': arguments.port}])
+elasticsearch = OpenSearch(hosts=[{"host": arguments.host, "port": arguments.port}])
 
 send_query_and_evaluate_result(
-    elasticsearch,
-    query_avg_response_time,
-    DEFAULT_NUM_COMPOSITE_BUCKETS,
-    arguments
+    elasticsearch, query_avg_response_time, DEFAULT_NUM_COMPOSITE_BUCKETS, arguments
 )
