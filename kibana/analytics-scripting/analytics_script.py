@@ -41,16 +41,13 @@ query_avg_response_time = {
     },
 }
 
-
-def add_keys_if_not_exist(dictionary: dict, keys: list):
+def add_nested_keys(dictionary: dict, keys: list):
     """
     Adds keys, in a nested format, to the dictionary if the keys do not exist.
     """
     curr_dict = dictionary
     for key in keys:
-        curr_dict.setdefault(key, {})
-        curr_dict = curr_dict[key]
-
+        curr_dict = curr_dict.setdefault(key, {})
 
 def get_most_recent_timestamp(flow_id: str):
     """
@@ -87,7 +84,6 @@ def get_most_recent_timestamp(flow_id: str):
         current_timestamp = (datetime.now() - FIVE_MINS).timestamp()
         return int(current_timestamp)
 
-
 def create_index_if_doesnt_exist(new_index: str):
     """
     If we do not have an index of type prefix for a given date, we must create it.
@@ -95,14 +91,41 @@ def create_index_if_doesnt_exist(new_index: str):
     if not elasticsearch.indices.exists(new_index):
         elasticsearch.indices.create(index=new_index)
 
+def create_analytics_document(bucket: dict, source: dict, max_date: datetime):
+    """
+    Returns an Elasticsearch document which will be uploaded to the dev-analytics-* index pattern.
+    """
+    return {
+        "doc_count": bucket["doc_count"],
+        "min_date": parser.parse(bucket["min"]["value_as_string"]),
+        "max_date": max_date,
+        "sessionLength": bucket["sessionLength"]["value"],
+        "companyId": source["companyId"],
+        "flowId": source["flowId"],
+        "eventMessage": "Interaction Response Time",
+    }
 
-def create_documents_and_send_bulk_request(buckets: list, source: dict):
+def create_bulk_action(index_to_update: str, document_id: str, document: dict):
     """
-    Given the buckets returned from the composite aggregation query, fetch the appropriate data
-    from each bucket, create an elasticsearch document using that data, and create the single
-    bulk request for that document. Once all documents and corresponding requests have been
-    created, send the bulk request to the elasticsearch cluster.
+    Creates an individual bulk action for use in a bulk request.
     """
+    return {
+        "_index": index_to_update,
+        "_type": "_doc",
+        "_id": document_id,
+        "_source": document,
+        "_op_type": "index",
+    }
+
+def process_composite_aggregation_data(query_result: dict):
+    """
+    Processes results from the composite aggregation query, sends data fetched from the result to
+    the appropriate index using a bulk request, and prepares for further processing of composite
+    query results.
+    """
+    buckets = query_result["aggregations"]["my_buckets"]["buckets"]
+    source = query_result["aggregations"]["hits"]["hits"]["hits"][0]["_source"]
+
     bulk_actions = []
     for bucket in buckets:
         # Should we go through past indices and attempt deletes so the interactionId doesn't
@@ -119,43 +142,14 @@ def create_documents_and_send_bulk_request(buckets: list, source: dict):
         # requests.
         create_index_if_doesnt_exist(index_to_update)
 
-        # creating the document that is sent with the bulk request and added to the index_to_update
-        # index
-        document = {
-            "doc_count": bucket["doc_count"],
-            "min_date": parser.parse(bucket["min"]["value_as_string"]),
-            "max_date": max_date,
-            "sessionLength": bucket["sessionLength"]["value"],
-            "companyId": source["companyId"],
-            "flowId": source["flowId"],
-            "eventMessage": "Interaction Response Time",
-        }
+        document = create_analytics_document(bucket, source, max_date)
+        document_id = bucket["key"]["agg"]
 
-        # creating the single bulk action along with the document, which is
-        # stored under "_source"
-        bulk_action = {
-            "_index": index_to_update,
-            "_type": "_doc",
-            "_id": bucket["key"]["agg"],
-            "_source": document,
-            "_op_type": "index",
-        }
-
+        bulk_action = create_bulk_action(index_to_update, document_id, document)
         bulk_actions.append(bulk_action)
     # sending the bulk request to Elasticsearch
     helpers.bulk(elasticsearch, bulk_actions)
 
-
-def process_composite_aggregation_data(query_result: dict):
-    """
-    Obtains necessary data for sending the Bulk API request that updates the
-    appropriate indices with the new data. Then prepares for obtaining the next
-    num_composite_buckets buckets from the composite aggregation result.
-    """
-    buckets = query_result["aggregations"]["my_buckets"]["buckets"]
-    source = query_result["aggregations"]["hits"]["hits"]["hits"][0]["_source"]
-
-    create_documents_and_send_bulk_request(buckets, source)
     # Composite aggregation queries only return a specified number of buckets,
     # num_composite_buckets in our case. The ordering of the buckets in the
     # composite query is done by the "sources" property. Each time a composite
@@ -168,13 +162,11 @@ def process_composite_aggregation_data(query_result: dict):
     # composite aggregation portion of the query, we are telling elasticsearch
     # to return the next num_composite_buckets, as defined by the composite
     # aggregation ordering, from the set of all composite aggregation buckets.
-
     query_composite = query_avg_response_time["aggs"]["my_buckets"]["composite"]
     after_key = query_result["aggregations"]["my_buckets"]["after_key"]["agg"]
 
     query_composite.setdefault("after", {})
     query_composite["after"] = {"agg": after_key}
-
 
 def send_query_and_evaluate_result(
     es_cluster: OpenSearch,
@@ -204,16 +196,16 @@ def send_query_and_evaluate_result(
         end_date = int(datetime.now().timestamp())
 
     # setting the number of buckets we want to view at a time for the composite aggregation
-    add_keys_if_not_exist(query, ["aggs", "my_buckets", "composite", "size"])
+    add_nested_keys(query, ["aggs", "my_buckets", "composite", "size"])
     query["aggs"]["my_buckets"]["composite"]["size"] = num_composite_buckets
 
     # adding keys if they do not exist, preventing any KeyErrors
-    add_keys_if_not_exist(query, ["query", "bool"])
+    add_nested_keys(query, ["query", "bool"])
     query["query"]["bool"].setdefault("must", [{}, {}])
 
     must = query["query"]["bool"]["must"]
-    add_keys_if_not_exist(must[0], ["match_phrase", "flowId"])
-    add_keys_if_not_exist(must[1], ["range", "tsEms"])
+    add_nested_keys(must[0], ["match_phrase", "flowId"])
+    add_nested_keys(must[1], ["range", "tsEms"])
 
     # querying the flow with the specified flowId
     must[0]["match_phrase"]["flowId"] = {"query": flow_id}
@@ -244,7 +236,6 @@ def send_query_and_evaluate_result(
     # so we just process the result of the query and are finished once that is done.
     if query_result["aggregations"]["my_buckets"]["buckets"]:
         process_composite_aggregation_data(query_result)
-
 
 cmd_line_parser = argparse.ArgumentParser()
 cmd_line_parser.add_argument("--host")
