@@ -5,4 +5,7 @@ applications:
       - python_buildpack
     no-route: true
     command: |
-      python3 analytics_script.py https://identity-idva-es-proxy-dev.apps.internal 61443
+      python3 analytics_scripting/analytics_script.py \
+        --host https://identity-idva-es-proxy-dev.apps.internal \
+        --port 61443 \
+        --flow_id t035KrLTyPv3jJao4jzwRrSzyV2gU1oK
