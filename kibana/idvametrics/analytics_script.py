@@ -5,6 +5,7 @@ and placing the result in the dev-analytics-* index pattern for further visualiz
 
 import argparse
 from datetime import datetime, timedelta
+import os
 from dateutil import parser
 from opensearchpy import OpenSearch, helpers
 
@@ -41,13 +42,42 @@ query_avg_response_time = {
     },
 }
 
-def add_nested_keys(dictionary: dict, keys: list):
+
+def get_start_date(cmd_line_arguments: argparse.Namespace):
     """
-    Adds keys, in a nested format, to the dictionary if the keys do not exist.
+    Returns the startDate command line argument, None if not provided
+    """
+    try:
+        # A start date was provided when running the script
+        return cmd_line_arguments.startDate
+    except AttributeError:
+        # A start date was not provided when running the script
+        return None
+
+
+def get_end_date(cmd_line_arguments: argparse.Namespace):
+    """
+    Returns the endDate command line argument, None if not provided
+    """
+    try:
+        # An end date was provided when running the script
+        return cmd_line_arguments.endDate
+    except AttributeError:
+        # An end date was not provided when running the script
+        return None
+
+
+def update_nested_key(dictionary: dict, key_path: list, value: dict):
+    """
+    Updates a dictionary at the nested key defined by key_path with value, adding
+    the nested keys if they do not exist
     """
     curr_dict = dictionary
-    for key in keys:
+    for key in key_path:
         curr_dict = curr_dict.setdefault(key, {})
+
+    curr_dict.update(value)
+
 
 def get_most_recent_timestamp(flow_id: str):
     """
@@ -59,37 +89,44 @@ def get_most_recent_timestamp(flow_id: str):
     newest_timestamp_query = {
         "query": {
             "bool": {
-                "must": [{"match_phrase": {"flowId": {"query": flow_id}}}],
-                "filter": [{"match_all": {}}],
-            }
+                "must": [
+                    {
+                        "match_phrase": {"flowId": flow_id},
+                    },
+                ],
+            },
         },
-        "size": 0,
-        "aggs": {
-            "types_count": {
-                "top_hits": {"size": 1, "sort": [{"tsEms": {"order": "desc"}}]}
-            }
-        },
+        "size": 1,
+        "sort": [
+            {
+                "tsEms": {"order": "desc"},
+            },
+        ],
     }
 
     res = elasticsearch.search(
         index=f"{ANALYTICS_INDEX_PATTERN}-*", body=newest_timestamp_query
     )
     try:
-        most_recent_timestamp = parser.parse(
-            res["aggregations"]["types_count"]["hits"]["hits"][0]["_source"]["tsEms"]
-        )
+        # Attempting to get the time of five minutes prior to the most recent timestamp (tsEms)
+        # of a document in the analytics index.
+        most_recent_timestamp = parser.parse(res["hits"]["hits"][0]["_source"]["tsEms"])
         five_mins_prior = most_recent_timestamp - FIVE_MINS
         return int(five_mins_prior.timestamp())
     except KeyError:
+        # There is nothing in the analytics index for the given flow_id, so we want the timestamp
+        # of five minutes prior to the current time.
         current_timestamp = (datetime.now() - FIVE_MINS).timestamp()
         return int(current_timestamp)
 
-def create_index_if_doesnt_exist(new_index: str):
+
+def create_index(new_index: str):
     """
     If we do not have an index of type prefix for a given date, we must create it.
     """
     if not elasticsearch.indices.exists(new_index):
         elasticsearch.indices.create(index=new_index)
+
 
 def create_analytics_document(bucket: dict, source: dict, max_date: datetime):
     """
@@ -105,6 +142,7 @@ def create_analytics_document(bucket: dict, source: dict, max_date: datetime):
         "eventMessage": "Interaction Response Time",
     }
 
+
 def create_bulk_action(index_to_update: str, document_id: str, document: dict):
     """
     Creates an individual bulk action for use in a bulk request.
@@ -116,6 +154,7 @@ def create_bulk_action(index_to_update: str, document_id: str, document: dict):
         "_source": document,
         "_op_type": "index",
     }
+
 
 def process_composite_aggregation_data(query_result: dict):
     """
@@ -140,7 +179,7 @@ def process_composite_aggregation_data(query_result: dict):
 
         # If index_to_update has not yet been created, we must do so before sending it any
         # requests.
-        create_index_if_doesnt_exist(index_to_update)
+        create_index(index_to_update)
 
         document = create_analytics_document(bucket, source, max_date)
         document_id = bucket["key"]["agg"]
@@ -151,74 +190,67 @@ def process_composite_aggregation_data(query_result: dict):
     helpers.bulk(elasticsearch, bulk_actions)
 
     # Composite aggregation queries only return a specified number of buckets,
-    # num_composite_buckets in our case. The ordering of the buckets in the
-    # composite query is done by the "sources" property. Each time a composite
-    # query is run, it will return a key idenitifying the last returned bucket in
-    # the composite aggregation ordering. This key is placed into the "after_key"
-    # variable in this script. That variable is then used in running subsequent
-    # composite aggregation queries, in which we are obtaining additional
-    # composite aggregation buckets that we could not get from previous queries.
-    # When we add, or update, the "after":{"agg":after_key} structure to the
-    # composite aggregation portion of the query, we are telling elasticsearch
-    # to return the next num_composite_buckets, as defined by the composite
-    # aggregation ordering, from the set of all composite aggregation buckets.
-    query_composite = query_avg_response_time["aggs"]["my_buckets"]["composite"]
+    # num_composite_buckets in our case. "after_key" is the identifier of the
+    # last returned bucket and is used in subsequent composite aggregation queries
+    # to return the next num_composite_buckets in the composite aggregation ordering.
     after_key = query_result["aggregations"]["my_buckets"]["after_key"]["agg"]
+    return after_key
 
-    query_composite.setdefault("after", {})
-    query_composite["after"] = {"agg": after_key}
 
 def send_query_and_evaluate_result(
-    es_cluster: OpenSearch,
     query: dict,
     num_composite_buckets: int,
-    args: argparse.ArgumentParser,
+    start_date: str,
+    end_date: str,
+    flow_id: str,
 ):
     """
     Prepares query of Elasticsearch data for a given time range, sends the query, and
     processes each bucket of the query result in a separate function.
     """
-    # Raises an AttributeError if not provided
-    flow_id = args.flowId
 
-    try:
-        start_date = int(parser.parse(args.startDate).timestamp())
-    except AttributeError:
-        if not elasticsearch.indices.get_alias(f"{ANALYTICS_INDEX_PATTERN}-*"):
-            # The dev-analytics index doesn't exist, so we want 5 minutes before the current time
-            start_date = int((datetime.now() - FIVE_MINS).timestamp())
-        else:
-            start_date = get_most_recent_timestamp(flow_id)
+    if start_date:
+        # A start date was provided when running the script
+        query_start_date = int(parser.parse(start_date).timestamp())
+    elif not elasticsearch.indices.get_alias(f"{ANALYTICS_INDEX_PATTERN}-*"):
+        # A start date was not provided when running the script and
+        # the dev-analytics index doesn't exist
+        query_start_date = int((datetime.now() - FIVE_MINS).timestamp())
+    else:
+        # A start date was not provided when running the script and
+        # the dev-analytics index does exist
+        query_start_date = get_most_recent_timestamp(flow_id)
 
-    try:
-        end_date = int(parser.parse(args.endDate).timestamp())
-    except AttributeError:
-        end_date = int(datetime.now().timestamp())
+    if end_date:
+        # An end date was provided when running the script
+        query_end_date = int(parser.parse(end_date).timestamp())
+    else:
+        # An end date was not provided when running the script
+        query_end_date = int(datetime.now().timestamp())
 
     # setting the number of buckets we want to view at a time for the composite aggregation
-    add_nested_keys(query, ["aggs", "my_buckets", "composite", "size"])
-    query["aggs"]["my_buckets"]["composite"]["size"] = num_composite_buckets
+    size = {"size": num_composite_buckets}
+    update_nested_key(query, ["aggs", "my_buckets", "composite"], size)
 
-    # adding keys if they do not exist, preventing any KeyErrors
-    add_nested_keys(query, ["query", "bool"])
-    query["query"]["bool"].setdefault("must", [{}, {}])
-
-    must = query["query"]["bool"]["must"]
-    add_nested_keys(must[0], ["match_phrase", "flowId"])
-    add_nested_keys(must[1], ["range", "tsEms"])
-
-    # querying the flow with the specified flowId
-    must[0]["match_phrase"]["flowId"] = {"query": flow_id}
-
-    # specifying a date range for the query
-    must[1]["range"]["tsEms"] = {
-        "gte": start_date,
-        "lte": end_date,
-        "format": "epoch_second",
+    # setting the queried flowId and required time range
+    match_phrase = {"match_phrase": {"flowId": {"query": flow_id}}}
+    query_range = {
+        "range": {
+            "tsEms": {
+                "gte": query_start_date,
+                "lte": query_end_date,
+                "format": "epoch_second",
+            }
+        }
     }
+    must = {
+        "must": [match_phrase, query_range],
+    }
+    update_nested_key(query, ["query", "bool"], must)
 
     # running the query against dev-skevents in elasticsearch
-    query_result = es_cluster.search(index=SK_INDEX_PATTERN, body=query)
+    query_result = elasticsearch.search(index=SK_INDEX_PATTERN, body=query)
+
     # len(query_result["aggregations"]["my_buckets"]["buckets"]) is the number of buckets
     # in the composite aggregation. If the number of buckets in the composite aggregation
     # is equal to the specified num_composite_buckets, then there could still be more
@@ -228,8 +260,11 @@ def send_query_and_evaluate_result(
         len(query_result["aggregations"]["my_buckets"]["buckets"])
         == num_composite_buckets
     ):
-        process_composite_aggregation_data(query_result)
-        query_result = es_cluster.search(index=SK_INDEX_PATTERN, body=query)
+        query_after_key = process_composite_aggregation_data(query_result)
+        query_composite = query["aggs"]["my_buckets"]["composite"]
+        query_composite["after"] = {"agg": query_after_key}
+
+        query_result = elasticsearch.search(index=SK_INDEX_PATTERN, body=query)
 
     # If the number of buckets in the composite aggregation is less than the specified
     # num_composite_buckets, then there are no more buckets that need to be processed,
@@ -237,10 +272,10 @@ def send_query_and_evaluate_result(
     if query_result["aggregations"]["my_buckets"]["buckets"]:
         process_composite_aggregation_data(query_result)
 
+
 cmd_line_parser = argparse.ArgumentParser()
 cmd_line_parser.add_argument("--host")
 cmd_line_parser.add_argument("--port")
-cmd_line_parser.add_argument("--flow_id")
 cmd_line_parser.add_argument("--start_date")
 cmd_line_parser.add_argument("--end_date")
 arguments = cmd_line_parser.parse_args()
@@ -248,5 +283,9 @@ arguments = cmd_line_parser.parse_args()
 elasticsearch = OpenSearch(hosts=[{"host": arguments.host, "port": arguments.port}])
 
 send_query_and_evaluate_result(
-    elasticsearch, query_avg_response_time, DEFAULT_NUM_COMPOSITE_BUCKETS, arguments
+    query_avg_response_time,
+    DEFAULT_NUM_COMPOSITE_BUCKETS,
+    get_start_date(arguments),
+    get_end_date(arguments),
+    os.environ["FLOW_ID"],
 )
