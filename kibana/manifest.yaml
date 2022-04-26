@@ -1,6 +1,8 @@
 ---
 applications:
-  - name: kibana
+- name: kibana
+  processes:
+  - type: web
     health-check-type: process
     memory: ((MEMORY))
     disk_quota: 4GB
@@ -14,3 +16,14 @@ applications:
       - route: identity-idva-monitoring-kibana-((ENVIRONMENT_NAME)).apps.internal
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
+  - type: worker
+    instances: 0
+    buildpacks:
+      - python_buildpack
+    no-route: true
+    command: |
+      python3 idvametrics/analytics_script.py \
+        --host https://identity-idva-es-proxy-dev.apps.internal \
+        --port 61443
+    env:
+      FLOW_ID: t035KrLTyPv3jJao4jzwRrSzyV2gU1oK
