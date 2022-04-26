@@ -5,7 +5,6 @@ and placing the result in the dev-analytics-* index pattern for further visualiz
 
 import argparse
 from datetime import datetime, timedelta
-import os
 from dateutil import parser
 from opensearchpy import OpenSearch, helpers
 
@@ -41,30 +40,6 @@ query_avg_response_time = {
         "hits": {"top_hits": {"_source": ["companyId", "flowId"], "size": 1}},
     },
 }
-
-
-def get_start_date(cmd_line_arguments: argparse.Namespace):
-    """
-    Returns the startDate command line argument, None if not provided
-    """
-    try:
-        # A start date was provided when running the script
-        return cmd_line_arguments.startDate
-    except AttributeError:
-        # A start date was not provided when running the script
-        return None
-
-
-def get_end_date(cmd_line_arguments: argparse.Namespace):
-    """
-    Returns the endDate command line argument, None if not provided
-    """
-    try:
-        # An end date was provided when running the script
-        return cmd_line_arguments.endDate
-    except AttributeError:
-        # An end date was not provided when running the script
-        return None
 
 
 def update_nested_key(dictionary: dict, key_path: list, value: dict):
@@ -276,8 +251,9 @@ def send_query_and_evaluate_result(
 cmd_line_parser = argparse.ArgumentParser()
 cmd_line_parser.add_argument("--host")
 cmd_line_parser.add_argument("--port")
-cmd_line_parser.add_argument("--start_date")
-cmd_line_parser.add_argument("--end_date")
+cmd_line_parser.add_argument("--flow_id")
+cmd_line_parser.add_argument("--start_date", default=None)
+cmd_line_parser.add_argument("--end_date", default=None)
 arguments = cmd_line_parser.parse_args()
 
 elasticsearch = OpenSearch(hosts=[{"host": arguments.host, "port": arguments.port}])
@@ -285,7 +261,7 @@ elasticsearch = OpenSearch(hosts=[{"host": arguments.host, "port": arguments.por
 send_query_and_evaluate_result(
     query_avg_response_time,
     DEFAULT_NUM_COMPOSITE_BUCKETS,
-    get_start_date(arguments),
-    get_end_date(arguments),
-    os.environ["FLOW_ID"],
+    arguments.start_date,
+    arguments.end_date,
+    arguments.flow_id,
 )
