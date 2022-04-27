@@ -20,9 +20,10 @@ query_avg_response_time = {
             "filter": [{"match_all": {}}],
         }
     },
-    "size": 0,
+    "_source": ["companyId", "flowId"],
+    "size": 1,
     "aggs": {
-        "my_buckets": {
+        "composite_buckets": {
             "aggs": {
                 "min": {"min": {"field": "tsEms"}},
                 "max": {"max": {"field": "tsEms"}},
@@ -37,7 +38,6 @@ query_avg_response_time = {
                 "sources": [{"agg": {"terms": {"field": "interactionId.keyword"}}}]
             },
         },
-        "hits": {"top_hits": {"_source": ["companyId", "flowId"], "size": 1}},
     },
 }
 
@@ -97,7 +97,7 @@ def get_most_recent_timestamp(flow_id: str):
 
 def create_index(new_index: str):
     """
-    If we do not have an index of type prefix for a given date, we must create it.
+    If we do not have an index titled new_index, we must create it.
     """
     if not elasticsearch.indices.exists(new_index):
         elasticsearch.indices.create(index=new_index)
@@ -137,18 +137,12 @@ def process_composite_aggregation_data(query_result: dict):
     the appropriate index using a bulk request, and prepares for further processing of composite
     query results.
     """
-    buckets = query_result["aggregations"]["my_buckets"]["buckets"]
-    source = query_result["aggregations"]["hits"]["hits"]["hits"][0]["_source"]
+    buckets = query_result["aggregations"]["composite_buckets"]["buckets"]
+    source = query_result["hits"]["hits"][0]["_source"]
 
     bulk_actions = []
     for bucket in buckets:
-        # Should we go through past indices and attempt deletes so the interactionId doesn't
-        # appear in multiple indices? The index of the bulk request only applies to the specific
-        # index we're attempting to update
-
-        # The document, identified by its interactionId, created from the current bucket belongs
-        # in the index defined by the latest date (max_date) of which the interactionId appears.
-        # The index is defined by index_to_update and is determined by max_date.
+        # The document belongs in the analytics index defined by the max_date.
         max_date = parser.parse(bucket["max"]["value_as_string"])
         index_to_update = f"{ANALYTICS_INDEX_PATTERN}-{max_date.strftime('%Y.%m.%d')}"
 
@@ -164,11 +158,9 @@ def process_composite_aggregation_data(query_result: dict):
     # sending the bulk request to Elasticsearch
     helpers.bulk(elasticsearch, bulk_actions)
 
-    # Composite aggregation queries only return a specified number of buckets,
-    # num_composite_buckets in our case. "after_key" is the identifier of the
-    # last returned bucket and is used in subsequent composite aggregation queries
-    # to return the next num_composite_buckets in the composite aggregation ordering.
-    after_key = query_result["aggregations"]["my_buckets"]["after_key"]["agg"]
+    # "after_key" is the identifier of the last returned bucket and will be used to return the
+    # next num_composite_buckets in the composite aggregation ordering.
+    after_key = query_result["aggregations"]["composite_buckets"]["after_key"]["agg"]
     return after_key
 
 
@@ -205,7 +197,7 @@ def send_query_and_evaluate_result(
 
     # setting the number of buckets we want to view at a time for the composite aggregation
     size = {"size": num_composite_buckets}
-    update_nested_key(query, ["aggs", "my_buckets", "composite"], size)
+    update_nested_key(query, ["aggs", "composite_buckets", "composite"], size)
 
     # setting the queried flowId and required time range
     match_phrase = {"match_phrase": {"flowId": {"query": flow_id}}}
@@ -226,25 +218,20 @@ def send_query_and_evaluate_result(
     # running the query against dev-skevents in elasticsearch
     query_result = elasticsearch.search(index=SK_INDEX_PATTERN, body=query)
 
-    # len(query_result["aggregations"]["my_buckets"]["buckets"]) is the number of buckets
-    # in the composite aggregation. If the number of buckets in the composite aggregation
-    # is equal to the specified num_composite_buckets, then there could still be more
-    # composite aggregation buckets that need to be processed and so more queries must
-    # be run.
+    # processing and querying additional composite aggregation buckets until there are no more
+    # buckets to process.
     while (
-        len(query_result["aggregations"]["my_buckets"]["buckets"])
+        len(query_result["aggregations"]["composite_buckets"]["buckets"])
         == num_composite_buckets
     ):
         query_after_key = process_composite_aggregation_data(query_result)
-        query_composite = query["aggs"]["my_buckets"]["composite"]
+        query_composite = query["aggs"]["composite_buckets"]["composite"]
         query_composite["after"] = {"agg": query_after_key}
 
         query_result = elasticsearch.search(index=SK_INDEX_PATTERN, body=query)
 
-    # If the number of buckets in the composite aggregation is less than the specified
-    # num_composite_buckets, then there are no more buckets that need to be processed,
-    # so we just process the result of the query and are finished once that is done.
-    if query_result["aggregations"]["my_buckets"]["buckets"]:
+    # processing the last set of composite aggregation buckets, if there are any to process.
+    if query_result["aggregations"]["composite_buckets"]["buckets"]:
         process_composite_aggregation_data(query_result)
 
 
