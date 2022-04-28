@@ -23,6 +23,8 @@ apps:
       routes:
         - identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal
     - name: kibana
+      routes:
+        - identity-idva-monitoring-kibana-${ENVIRONMENT_NAME}.apps.internal
     - name: kong
       routes:
         - identity-idva-kong-${ENVIRONMENT_NAME}.apps.internal
