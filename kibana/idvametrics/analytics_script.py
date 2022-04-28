@@ -12,6 +12,7 @@ ANALYTICS_INDEX_PATTERN = "dev-analytics"
 SK_INDEX_PATTERN = "dev-skevents-*"
 DEFAULT_NUM_COMPOSITE_BUCKETS = 10
 FIVE_MINS = timedelta(minutes=5)
+ONE_DAY = timedelta(days=1)
 
 query_avg_response_time = {
     "query": {
@@ -115,12 +116,13 @@ def create_analytics_document(bucket: dict, source: dict, max_date: datetime):
         "companyId": source["companyId"],
         "flowId": source["flowId"],
         "eventMessage": "Interaction Response Time",
+        "interactionId": bucket["key"]["agg"],
     }
 
 
-def create_bulk_action(index_to_update: str, document_id: str, document: dict):
+def create_bulk_index_action(index_to_update: str, document_id: str, document: dict):
     """
-    Creates an individual bulk action for use in a bulk request.
+    Creates an individual Bulk API index action.
     """
     return {
         "_index": index_to_update,
@@ -131,7 +133,19 @@ def create_bulk_action(index_to_update: str, document_id: str, document: dict):
     }
 
 
-def process_composite_aggregation_data(query_result: dict):
+def create_bulk_delete_action(index: str, document_id: str):
+    """
+    Creates an individual Bulk API delete action.
+    """
+    return {
+        "_op_type": "delete",
+        "_index": index,
+        "_type": "doc",
+        "_id": document_id
+    }
+
+
+def process_composite_aggregation_data(query_result: dict, metric: str):
     """
     Processes results from the composite aggregation query, sends data fetched from the result to
     the appropriate index using a bulk request, and prepares for further processing of composite
@@ -142,18 +156,35 @@ def process_composite_aggregation_data(query_result: dict):
 
     bulk_actions = []
     for bucket in buckets:
+        # This document id is determined by the metric type and metric id, which is defined in
+        # bucket["key"]["agg"].
+        document_id = f'{metric}-{bucket["key"]["agg"]}'
+
         # The document belongs in the analytics index defined by the max_date.
-        max_date = parser.parse(bucket["max"]["value_as_string"])
+        max_date = parser.parse(bucket["max"]["value_as_string"]).date()
         index_to_update = f"{ANALYTICS_INDEX_PATTERN}-{max_date.strftime('%Y.%m.%d')}"
+
+        # Creating bulk actions for deleting the document with id document_id from an analytics
+        # index in the date range between min_date and max_date, if the document exists. This
+        # ensures we don't have a document with a given document_id saved to multiple indices.
+        min_date = parser.parse(bucket["min"]["value_as_string"]).date()
+        while min_date < max_date:
+            index_date = min_date.strftime("%Y.%m.%d")
+            index = f"{ANALYTICS_INDEX_PATTERN}-{index_date}"
+
+            if elasticsearch.exists(index, document_id):
+                bulk_action = create_bulk_delete_action(index, document_id)
+                bulk_actions.append(bulk_action)
+                break
+
+            min_date += ONE_DAY
 
         # If index_to_update has not yet been created, we must do so before sending it any
         # requests.
         create_index(index_to_update)
 
         document = create_analytics_document(bucket, source, max_date)
-        document_id = bucket["key"]["agg"]
-
-        bulk_action = create_bulk_action(index_to_update, document_id, document)
+        bulk_action = create_bulk_index_action(index_to_update, document_id, document)
         bulk_actions.append(bulk_action)
     # sending the bulk request to Elasticsearch
     helpers.bulk(elasticsearch, bulk_actions)
@@ -169,7 +200,7 @@ def send_query_and_evaluate_result(
     num_composite_buckets: int,
     start_date: str,
     end_date: str,
-    flow_id: str,
+    flow_id: str
 ):
     """
     Prepares query of Elasticsearch data for a given time range, sends the query, and
@@ -224,7 +255,7 @@ def send_query_and_evaluate_result(
         len(query_result["aggregations"]["composite_buckets"]["buckets"])
         == num_composite_buckets
     ):
-        query_after_key = process_composite_aggregation_data(query_result)
+        query_after_key = process_composite_aggregation_data(query_result, "avg_response_time")
         query_composite = query["aggs"]["composite_buckets"]["composite"]
         query_composite["after"] = {"agg": query_after_key}
 
@@ -232,7 +263,7 @@ def send_query_and_evaluate_result(
 
     # processing the last set of composite aggregation buckets, if there are any to process.
     if query_result["aggregations"]["composite_buckets"]["buckets"]:
-        process_composite_aggregation_data(query_result)
+        process_composite_aggregation_data(query_result, "avg_response_time")
 
 
 cmd_line_parser = argparse.ArgumentParser()
