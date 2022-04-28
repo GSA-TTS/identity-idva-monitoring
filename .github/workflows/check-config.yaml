@@ -8,6 +8,7 @@ on:
     paths:
       - '**/prometheus-config.yml'
       - '**/alert-config.yml'
+      - '**/rules.yml'
   workflow_call:
 
 jobs:

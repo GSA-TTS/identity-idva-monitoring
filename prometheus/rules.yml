@@ -161,7 +161,7 @@ groups:
 
   - name: ElasticsearchAlerts
     rules:
-      - alert: High disk utilization
+      - alert: High ES disk utilization
         expr: elasticsearch_filesystem_data_available_bytes / elasticsearch_filesystem_data_size_bytes < 0.2 
         annotations:
           summary: >-
