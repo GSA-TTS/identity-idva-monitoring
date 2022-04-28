@@ -86,14 +86,13 @@ def get_most_recent_timestamp(flow_id: str):
     try:
         # Attempting to get the time of five minutes prior to the most recent timestamp (tsEms)
         # of a document in the analytics index.
-        most_recent_timestamp = parser.parse(res["hits"]["hits"][0]["_source"]["tsEms"])
-        five_mins_prior = most_recent_timestamp - FIVE_MINS
-        return int(five_mins_prior.timestamp())
+        latest_timestamp = parser.parse(res["hits"]["hits"][0]["_source"]["tsEms"])
     except KeyError:
-        # There is nothing in the analytics index for the given flow_id, so we want the timestamp
-        # of five minutes prior to the current time.
-        current_timestamp = (datetime.now() - FIVE_MINS).timestamp()
-        return int(current_timestamp)
+        # Nothing in the analytics index for the given flow_id, so use the current time.
+        latest_timestamp = datetime.now()
+        
+    five_mins_prior = latest_timestamp - FIVE_MINS
+    return int(five_mins_prior.timestamp())
 
 
 def create_index(new_index: str):
