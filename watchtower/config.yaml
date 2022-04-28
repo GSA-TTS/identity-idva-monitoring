@@ -26,6 +26,10 @@ apps:
     - name: grafana
       routes:
         - identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal
+    - name: keycloak
+      optional: true
+      routes:
+        - identity-idva-keycloak-${ENVIRONMENT_NAME}.apps.internal
     - name: kibana
       routes:
         - identity-idva-monitoring-kibana-${ENVIRONMENT_NAME}.apps.internal
