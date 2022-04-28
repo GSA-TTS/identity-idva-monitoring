@@ -34,7 +34,7 @@ apps:
     - name: outbound-proxy
       optional: true
       routes:
-        - identity-idva-outbound-proxy.apps.internal
+        - outbound-proxy-${ENVIRONMENT_NAME}.apps.internal
     - name: prometheus
       routes:
         - identity-idva-monitoring-prometheus-${ENVIRONMENT_NAME}.apps.internal
