@@ -90,7 +90,7 @@ def get_most_recent_timestamp(flow_id: str):
     except (IndexError, KeyError):
         # Nothing in the analytics index for the given flow_id, so use the current time.
         latest_timestamp = datetime.now()
-        
+
     five_mins_prior = latest_timestamp - FIVE_MINS
     return int(five_mins_prior.timestamp())
 
@@ -136,12 +136,7 @@ def create_bulk_delete_action(index: str, document_id: str):
     """
     Creates an individual Bulk API delete action.
     """
-    return {
-        "_op_type": "delete",
-        "_index": index,
-        "_type": "doc",
-        "_id": document_id
-    }
+    return {"_op_type": "delete", "_index": index, "_type": "doc", "_id": document_id}
 
 
 def process_composite_aggregation_data(query_result: dict, metric: str):
@@ -199,7 +194,7 @@ def send_query_and_evaluate_result(
     num_composite_buckets: int,
     start_date: str,
     end_date: str,
-    flow_id: str
+    flow_id: str,
 ):
     """
     Prepares query of Elasticsearch data for a given time range, sends the query, and
@@ -254,7 +249,9 @@ def send_query_and_evaluate_result(
         len(query_result["aggregations"]["composite_buckets"]["buckets"])
         == num_composite_buckets
     ):
-        query_after_key = process_composite_aggregation_data(query_result, "avg_response_time")
+        query_after_key = process_composite_aggregation_data(
+            query_result, "avg_response_time"
+        )
         query_composite = query["aggs"]["composite_buckets"]["composite"]
         query_composite["after"] = {"agg": query_after_key}
 
