@@ -19,9 +19,6 @@ closed="$restricted-closed"
 
 cf target -s "$restricted"
 
-# Source = Elasticsearch-metrics
-cf add-network-policy elasticsearch-metrics es-proxy --protocol tcp --port 61443 -s "$restricted"
-
 # Source = Kibana
 cf add-network-policy kibana es-proxy --protocol tcp --port 61443
 
@@ -38,10 +35,13 @@ cf add-network-policy prometheus alertmanager          --protocol tcp --port 614
 cf add-network-policy prometheus cf-metrics            --protocol tcp --port 61443 -s "$restricted"
 cf add-network-policy prometheus cortex                --protocol tcp --port 61443 -s "$restricted"
 cf add-network-policy prometheus grafana               --protocol tcp --port 61443 -s "$closed"
-cf add-network-policy prometheus elasticsearch-metrics --protocol tcp --port 61443 -s "$restricted"
+cf add-network-policy prometheus elasticsearch-metrics --protocol tcp --port 61443 -s "$closed"
 cf add-network-policy prometheus kong                  --protocol tcp --port 8100  -s "$closed"
 cf add-network-policy prometheus redis-metrics         --protocol tcp --port 61443 -s "$restricted"
 cf add-network-policy prometheus watchtower            --protocol tcp --port 61443 -s "$closed"
+
+# Source = Elasticsearch-metrics
+cf add-network-policy elasticsearch-metrics es-proxy --protocol tcp --port 61443 -s "$restricted"
 
 cf target -s "$public"
 
