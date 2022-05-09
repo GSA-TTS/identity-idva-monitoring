@@ -39,7 +39,7 @@ cf add-network-policy prometheus cf-metrics            --protocol tcp --port 614
 cf add-network-policy prometheus cortex                --protocol tcp --port 61443 -s "$restricted"
 cf add-network-policy prometheus grafana               --protocol tcp --port 61443 -s "$restricted"
 cf add-network-policy prometheus elasticsearch-metrics --protocol tcp --port 61443 -s "$restricted"
-cf add-network-policy prometheus kong                  --protocol tcp --port 8100  -s "$restricted"
+cf add-network-policy prometheus kong                  --protocol tcp --port 8100  -s "$closed"
 cf add-network-policy prometheus redis-metrics         --protocol tcp --port 61443 -s "$restricted"
 cf add-network-policy prometheus watchtower            --protocol tcp --port 61443 -s "$closed"
 
