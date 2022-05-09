@@ -10,7 +10,6 @@ applications:
     services:
       - prometheus-storage
     command: |
-      ./install_cortex.sh
       export BUCKET_NAME=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.bucket')
       export BUCKET_ENDPOINT=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.fips_endpoint')
       export AWS_REGION=$(echo $VCAP_SERVICES | jq '.s3[0].credentials.region')

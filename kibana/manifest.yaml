@@ -8,8 +8,7 @@ applications:
     buildpacks:
       - https://github.com/cloudfoundry/apt-buildpack
       - binary_buildpack
-    command: |
-      /home/vcap/deps/0/apt/usr/share/kibana/bin/kibana --config config/kibana.yml
+    command: /home/vcap/deps/0/apt/usr/share/kibana/bin/kibana --config config/kibana.yml
     routes:
       - route: identity-idva-monitoring-kibana-((ENVIRONMENT_NAME)).apps.internal
     env:

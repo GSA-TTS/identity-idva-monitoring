@@ -31,6 +31,11 @@ jobs:
           cf-username: ${{ secrets.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
+          space-suffix: "-public"
+
+      - name: Install Alertmanager
+        run: ./install_alertmanager.sh
+        working-directory: ./alertmanager
 
       - name: Generate config files
         run: |
