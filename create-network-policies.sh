@@ -20,8 +20,8 @@ closed="$restricted-closed"
 cf target -s "$restricted"
 
 # Source = Alertmanager
-cf add-network-policy alertmanager alertmanager --protocol tcp --port 9094 -s "$restricted"
-cf add-network-policy alertmanager alertmanager --protocol udp --port 9094 -s "$restricted"
+cf add-network-policy alertmanager alertmanager --protocol tcp --port 9094 -s "$public"
+cf add-network-policy alertmanager alertmanager --protocol udp --port 9094 -s "$public"
 
 # Source = Elasticsearch-metrics
 cf add-network-policy elasticsearch-metrics es-proxy --protocol tcp --port 61443 -s "$restricted"
@@ -34,7 +34,7 @@ cf add-network-policy grafana prometheus --protocol tcp --port 61443 -s "$restri
 cf add-network-policy kibana es-proxy --protocol tcp --port 61443
 
 # Source = Prometheus
-cf add-network-policy prometheus alertmanager          --protocol tcp --port 61443 -s "$restricted"
+cf add-network-policy prometheus alertmanager          --protocol tcp --port 61443 -s "$public"
 cf add-network-policy prometheus cf-metrics            --protocol tcp --port 61443 -s "$restricted"
 cf add-network-policy prometheus cortex                --protocol tcp --port 61443 -s "$restricted"
 cf add-network-policy prometheus grafana               --protocol tcp --port 61443 -s "$restricted"
