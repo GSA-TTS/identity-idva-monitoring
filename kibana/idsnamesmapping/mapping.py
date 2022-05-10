@@ -24,7 +24,9 @@ def create_bulk_index_action(index_to_update: str, document_id: str, document: d
     }
 
 
-def create_mapping_document(flow_id: str, flow_name: str, node_id: str, node_title: str):
+def create_mapping_document(
+    flow_id: str, flow_name: str, node_id: str, node_title: str
+):
     """
     Creates a document containing the flow id to flow title and node id to node title mappings.
     """
@@ -43,6 +45,7 @@ def create_document_id(flow_id: str, node_id: str) -> str:
     document_id = f"{flow_id}-{node_id}".encode()
     return sha256(document_id).hexdigest()
 
+
 def create_mappings(flows: list):
     """
     Takes in a set of flows and adds the mappings to bulk index documents, returning the set of
@@ -51,6 +54,8 @@ def create_mappings(flows: list):
 
     bulk_actions = []
 
+    # Going through the flows and pulling out the flow id, flow name, as well as the node id and
+    # node title for all nodes in the flow.
     for flow in flows:
         flow_name = flow["name"]
         flow_id = flow["flowId"]
@@ -79,6 +84,7 @@ def create_mappings(flows: list):
                 bulk_actions.append(bulk_action)
     return bulk_actions
 
+
 def main():
     """
     Makes necessary requests to obtain the mapping data and adds that data to the analytics index.
@@ -104,9 +110,9 @@ def main():
     access_token = requests.post(login_url, data=auth).json()["access_token"]
     header = {"Authorization": f"Bearer {access_token}"}
 
-    # Going through every flow and pulling out the flow id, flow name, as well as the node id and
-    # node title for all nodes in the flow.
+    # pulling out the flow data for all flows
     flows = requests.get(idva_flows_url, headers=header).json()["flowsInfo"]
+    # keeping only the specified flows
     flows = [
         flow
         for flow in flows
