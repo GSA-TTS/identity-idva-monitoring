@@ -25,3 +25,7 @@ applications:
       python3 idsnamesmapping/mapping.py \
         --host https://identity-idva-es-proxy-((ENVIRONMENT_NAME)).apps.internal \
         --port 61443
+        --email ((EMAIL))
+        --password ((PASSWORD))
+        --loginurl https://idva-api-((ENVIRONMENT_NAME)).app.cloud.gov/v1/customers/login
+        --flowsurl https://idva-api-((ENVIRONMENT_NAME)).app.cloud.gov/v1/flows

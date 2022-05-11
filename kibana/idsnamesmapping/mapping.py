@@ -90,21 +90,24 @@ def main():
     Makes necessary requests to obtain the mapping data and adds that data to the analytics index.
     """
     cmd_line_parser = argparse.ArgumentParser()
+    cmd_line_parser.add_argument("--email")
+    cmd_line_parser.add_argument("--password")
+    cmd_line_parser.add_argument("--loginurl")
+    cmd_line_parser.add_argument("--flowsurl")
     cmd_line_parser.add_argument("--host")
     cmd_line_parser.add_argument("--port")
     cmd_line_parser.add_argument("--flow_ids", default="all")
     arguments = cmd_line_parser.parse_args()
-
     elasticsearch = OpenSearch(hosts=[{"host": arguments.host, "port": arguments.port}])
     flow_ids = arguments.flow_ids
     bulk_actions = []
 
     # url to all idva flows
-    idva_flows_url = "https://idva-api-dev.app.cloud.gov/v1/flows"
+    idva_flows_url = arguments.flowsurl
     # the required authentication to obtain an access token
-    auth = {"email": "idva@gsa.gov", "password": "vBtCVyI@v0oqgxBejd!sJz&ZJc"}
+    auth = {"email": arguments.email, "password": arguments.password}
     # the url for logging in and obtaining an access token
-    login_url = "https://idva-api-dev.app.cloud.gov/v1/customers/login"
+    login_url = arguments.loginurl
 
     # the required access token for accessing flow data
     access_token = requests.post(login_url, data=auth).json()["access_token"]
