@@ -34,5 +34,14 @@ jobs:
           --strategy rolling
         working-directory: ./kibana
 
+      - name: Deploy Analytics Scripting
+        run: cf push --vars-file vars.yaml
+          --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+          --var USERNAME=${{ secrets.METRICS_USERNAME }}
+          --var PASSWORD=${{ secrets.METRICS_PASSWORD }}
+        working-directory: ./idvametrics
+
       - name: Apply CF Network Policies
         run: ./create-network-policies.sh
+        env:
+          ENVIRONMENT_NAME: ${{ steps.cf-setup.outputs.target-environment }}
