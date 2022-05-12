@@ -5,6 +5,7 @@ and placing the result in the dev-analytics-* index pattern for further visualiz
 
 import argparse
 from datetime import datetime, timedelta
+import requests
 from dateutil import parser
 from opensearchpy import OpenSearch, helpers
 
@@ -262,8 +263,6 @@ def send_query_and_evaluate_result(
         process_composite_aggregation_data(query_result, "avg_response_time")
 
 
-<<<<<<< HEAD
-=======
 def get_authorization_header_to_idva_flows(email: str, password: str, login_url: str):
     """
     Returns a header, containing an access token, for an http request to flow data.
@@ -313,7 +312,6 @@ def get_mappings(
     return ids_names_mapping
 
 
->>>>>>> fc0a238... Rename and redfine variables
 cmd_line_parser = argparse.ArgumentParser()
 cmd_line_parser.add_argument("--host")
 cmd_line_parser.add_argument("--port")
