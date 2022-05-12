@@ -276,14 +276,16 @@ def get_authorization_header_to_idva_flows(email: str, password: str, login_url:
 
 
 def get_mappings(
-    flow_id: str, email: str, password: str, login_url: str, base_url: str
+    flow_id: str, email: str, password: str, base_url: str
 ):
     """
     Returns the mappings of flow id to flow name and node id to node names.
     """
+    login_url = f"{base_url}/customers/login"
+
     header = get_authorization_header_to_idva_flows(email, password, login_url)
     # pulling out the flow data for a flow of a given flow id
-    flow_url = f"{base_url}/{flow_id}"
+    flow_url = f"{base_url}/flows/{flow_id}"
     flow = requests.get(flow_url, headers=header).json()["flowInfo"]
     # We always run the script with one specified flow id, so flows should always have one element
     nodes = flow["graphData"]["elements"]["nodes"]
@@ -320,7 +322,6 @@ cmd_line_parser.add_argument("--start_date", default=None)
 cmd_line_parser.add_argument("--end_date", default=None)
 cmd_line_parser.add_argument("--username")
 cmd_line_parser.add_argument("--password")
-cmd_line_parser.add_argument("--login_url")
 cmd_line_parser.add_argument("--base_url")
 arguments = cmd_line_parser.parse_args()
 
@@ -329,7 +330,6 @@ mappings = get_mappings(
     arguments.flow_id,
     arguments.username,
     arguments.password,
-    arguments.login_url,
     arguments.base_url,
 )
 
