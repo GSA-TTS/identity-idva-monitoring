@@ -194,9 +194,15 @@ class CompositeAggregationQuery(AnalyticsQuery):
       document[key] = bucket["key"][key]
 
     if "id" in document.keys():
+      connector_id = bucket["connectorId"]["buckets"][0]["key"]
+      document["connectorId"] = connector_id
       node_id = document["id"]
-      node = [e for e in self.mappings["nodes"] if e["id"] == node_id]
-      document["nodeName"] = node["title"]
+      try:
+        node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
+        title = node["title"]
+        document["nodeName"] = f'{connector_id} {title}'
+      except IndexError:
+        document["nodeName"] = f'{connector_id}'
 
     return document
 
@@ -245,6 +251,8 @@ class CompositeAggregationQuery(AnalyticsQuery):
     the appropriate index using a bulk request, and prepares for further processing of composite
     query results.
     """
+
+
     buckets = query_result["aggregations"]["composite_buckets"]["buckets"]
     source = query_result["hits"]["hits"][0]["_source"]
 
@@ -280,7 +288,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
       bulk_actions.append(bulk_action)
 
     # sending the bulk request to Elasticsearch
+    print("Sending Bulk Request")
     helpers.bulk(self.elasticsearch, bulk_actions)
+    print("Finished Bulk Request")
 
     # "after_key" is the identifier of the last returned bucket and will be used to return the
     # next num_composite_buckets in the composite aggregation ordering.
@@ -290,9 +300,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
   def send_query_and_evaluate_results(self) -> None:
     # running the Elasticsearch query
     query_result = self.run_query()
-
     # processing and querying additional composite aggregation buckets until there are no more
     # buckets to process.
+
     while (
       len(query_result["aggregations"]["composite_buckets"]["buckets"])
       == self.num_composite_buckets
@@ -369,6 +379,7 @@ class ScanQuery(AnalyticsQuery):
     document  = {
       "companyId": source["companyId"],
       "doc_count": 1,
+      "connectorId": source["connectorId"],
       "eventMessage": self.event_message,
       "flowId": self.flow_id,
       "flowName": self.mappings["flow_name"],
@@ -387,8 +398,11 @@ class ScanQuery(AnalyticsQuery):
     
     if "id" in document.keys():
       node_id = document["id"]
-      node = [e for e in self.mappings["nodes"] if e["id"] == node_id]
-      document["nodeName"] = node["title"]
+      try:
+        node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
+        document["nodeName"] = f'{document["connectorId"]} {node["title"]}'
+      except IndexError:
+        document["nodeName"] = f'{document["connectorId"]}'
 
     return document
 
@@ -414,7 +428,8 @@ class ScanQuery(AnalyticsQuery):
       # Creating the bulk index action for the document and adding it to the list of bulk actions
       # that are sent
       bulk_action = self.create_bulk_index_action(index_to_update, document_id, document)
-      #bulk_action = self.create_bulk_delete_action(index_to_update, document_id)
       bulk_actions.append(bulk_action)
     # sending the bulk request to Elasticsearch
+    print("Sending Scan Query Bulk Request")
     helpers.bulk(self.elasticsearch, bulk_actions)
+    print("Finished Scan Query Bulk Request")

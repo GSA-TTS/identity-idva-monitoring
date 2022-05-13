@@ -75,9 +75,8 @@ def get_mappings(
     return ids_names_mapping
 
 def main():
-
-  elasticsearch = OpenSearch(hosts=[{"host": arguments.host, "port": arguments.port}])
   arguments = get_command_line_arguments()
+  elasticsearch = OpenSearch(hosts=[{"host": arguments.host, "port": arguments.port}], timeout=300)
 
   mappings = get_mappings(
     arguments.flow_id,
@@ -112,6 +111,17 @@ def main():
 
   connector_response_time = CompositeAggregationQuery(**kwargs)
   connector_response_time.send_query_and_evaluate_results()
+
+  kwargs["metric_key"] = ["interactionId"]
+  kwargs["event_message"] = "Interaction Response Time"
+  kwargs["metric"] = "interaction_response_time"
+  kwargs["query"] = queries.workflow_response_time
+  kwargs["index_pattern"] = analyticsconstants.SK_INDEX_PATTERN
+  kwargs["document_keys"] = ["sessionLength"]
+
+  workflow_response_time = CompositeAggregationQuery(**kwargs)
+  workflow_response_time.send_query_and_evaluate_results()
+
 
 if __name__ == "__main__":
   main()
