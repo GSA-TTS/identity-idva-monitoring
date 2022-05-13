@@ -18,6 +18,11 @@ connector_response_time = {
       "aggs": {
         "min": {"min": {"field": "tsEms"}},
         "max": {"max": {"field": "tsEms"}},
+        "connectorId": {
+          "terms": {
+            "field": "connectorId.keyword"
+          }
+        },
         "sessionLength": {
           "bucket_script": {
             "buckets_path": {"startTime": "min", "endTime": "max"},
@@ -51,7 +56,6 @@ connector_response_time = {
 workflow_response_time = {
     "query": {
       "bool": {
-        "must": [{"match_phrase": {"flowId": {}}}, {"range": {"tsEms": {}}}],
         "filter": [{"match_all": {}}],
       }
     },
@@ -70,7 +74,7 @@ workflow_response_time = {
           },
         },
         "composite": {
-          "sources": [{"agg": {"terms": {"field": "interactionId.keyword"}}}]
+          "sources": [{"interactionId": {"terms": {"field": "interactionId.keyword"}}}]
         },
       },
     },
