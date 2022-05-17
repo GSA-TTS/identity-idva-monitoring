@@ -9,7 +9,7 @@ applications:
       --host identity-idva-es-proxy-((ENVIRONMENT_NAME)).apps.internal \
       --port 8080 \
       --flow_id ((FLOW_ID)) \
-      --base_url https://idva-api-((ENVIRONMENT_NAME)).app.cloud.gov/v1 \
+      --base_url https://idva-api-((ENVIRONMENT_NAME)).app.cloud.gov \
       --username ((USERNAME)) \
       --password "$PASSWORD" \
       --start_date "May 1, 2021"
