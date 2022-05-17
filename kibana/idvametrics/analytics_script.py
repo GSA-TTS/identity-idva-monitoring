@@ -271,8 +271,13 @@ def get_authorization_header_to_idva_flows(email: str, password: str, login_url:
     auth = {"email": email, "password": password}
 
     # the required access token for accessing flow data
-    access_token = requests.post(login_url, data=auth).json()["access_token"]
-    return {"Authorization": f"Bearer {access_token}"}
+    json = requests.post(login_url, data=auth).json()
+    try:
+        access_token = json["access_token"]
+        return {"Authorization": f"Bearer {access_token}"}
+    except KeyError:
+        print(json)
+        exit(1)
 
 
 def get_mappings(
@@ -286,7 +291,12 @@ def get_mappings(
     header = get_authorization_header_to_idva_flows(email, password, login_url)
     # pulling out the flow data for a flow of a given flow id
     flow_url = f"{base_url}/v1/flows/{flow_id}"
-    flow = requests.get(flow_url, headers=header).json()["flowInfo"]
+    json = requests.get(flow_url, headers=header).json()
+    try:
+        flow = json["flowInfo"]
+    except KeyError:
+        print(json)
+        exit(1)
     # We always run the script with one specified flow id, so flows should always have one element
     nodes = flow["graphData"]["elements"]["nodes"]
 
