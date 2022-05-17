@@ -285,7 +285,7 @@ def get_mappings(
 
     header = get_authorization_header_to_idva_flows(email, password, login_url)
     # pulling out the flow data for a flow of a given flow id
-    flow_url = f"{base_url}/flows/{flow_id}"
+    flow_url = f"{base_url}/v1/flows/{flow_id}"
     flow = requests.get(flow_url, headers=header).json()["flowInfo"]
     # We always run the script with one specified flow id, so flows should always have one element
     nodes = flow["graphData"]["elements"]["nodes"]

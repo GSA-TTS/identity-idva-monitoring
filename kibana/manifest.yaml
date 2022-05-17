@@ -27,4 +27,4 @@ applications:
         --flow_id ((FLOW_ID))
         --username ((USERNAME))
         --password ((PASSWORD))
-        --base_url https://idva-api-((ENVIRONMENT_NAME)).app.cloud.gov/v1
+        --base_url https://idva-api-((ENVIRONMENT_NAME)).app.cloud.gov
