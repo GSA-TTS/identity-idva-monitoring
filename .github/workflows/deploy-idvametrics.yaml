@@ -1,5 +1,5 @@
 ---
-name: Deploy Kibana
+name: Deploy Analytics Scripting
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
     tags:
       - '*'
     paths:
-      - 'kibana/**'
-      - '.github/workflows/deploy-kibana.yaml'
+      - 'idvametrics/**'
+      - '.github/workflows/deploy-idvametrics.yaml'
       - '!**.md'  # Ignore all markdown files in the repository
   release:
     types: [released]
@@ -28,13 +28,9 @@ jobs:
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
 
-      - name: Deploy Kibana
+      - name: Deploy Analytics Scripting
         run: cf push --vars-file vars.yaml
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
-          --strategy rolling
-        working-directory: ./kibana
-
-      - name: Apply CF Network Policies
-        run: ./create-network-policies.sh
-        env:
-          ENVIRONMENT_NAME: ${{ steps.cf-setup.outputs.target-environment }}
+          --var USERNAME=${{ secrets.METRICS_USERNAME }}
+          --var PASSWORD=${{ secrets.METRICS_PASSWORD }}
+        working-directory: ./idvametrics
