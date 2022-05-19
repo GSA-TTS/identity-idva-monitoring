@@ -33,4 +33,6 @@ jobs:
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
           --var USERNAME=${{ secrets.METRICS_USERNAME }}
           --var PASSWORD=${{ secrets.METRICS_PASSWORD }}
+          --var FLOW_ID=${{ secrets.FLOW_ID }}
+          --task
         working-directory: ./idvametrics
