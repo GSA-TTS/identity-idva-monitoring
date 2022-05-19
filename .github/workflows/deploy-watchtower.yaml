@@ -27,12 +27,17 @@ jobs:
           cf-username: ${{ secrets.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
+          space-suffix: "-closed"
 
       - name: Set audit user credentials
         run: |
           target_env_upper=${{ steps.cf-setup.outputs.target-environment-upper }}
           echo "watchtower_user=WATCHTOWER_USER_$target_env_upper" >> $GITHUB_ENV
           echo "watchtower_pass=WATCHTOWER_PASS_$target_env_upper" >> $GITHUB_ENV
+
+      - name: Install Watchtower
+        run: ./install_watchtower.sh
+        working-directory: ./watchtower
 
       - name: Deploy Watchtower
         run: cf push --vars-file vars.yaml

@@ -27,6 +27,11 @@ jobs:
           cf-username: ${{ secrets.CF_USERNAME }}
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
+          space-suffix: "-closed"
+
+      - name: Install ElasticSearch Exporter
+        run: ./install_elasticsearch_exporter.sh
+        working-directory: ./elasticsearch
 
       - name: Deploy Elasticsearch Exporter
         run: cf push
@@ -37,3 +42,5 @@ jobs:
 
       - name: Apply CF Network Policies
         run: ./create-network-policies.sh
+        env:
+          ENVIRONMENT_NAME: ${{ steps.cf-setup.outputs.target-environment }}

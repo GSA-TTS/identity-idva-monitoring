@@ -17,12 +17,22 @@ apps:
     - name: es-proxy
       routes:
         - identity-idva-es-proxy-${ENVIRONMENT_NAME}.apps.internal
+    - name: flow-client
+      optional: true
+      routes:
+        - identity-idva-keycloak-${ENVIRONMENT_NAME}.apps.internal
     - name: gpo
       optional: true
     - name: grafana
       routes:
         - identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal
+    - name: keycloak
+      optional: true
+      routes:
+        - identity-idva-keycloak-${ENVIRONMENT_NAME}.apps.internal
     - name: kibana
+      routes:
+        - identity-idva-monitoring-kibana-${ENVIRONMENT_NAME}.apps.internal
     - name: kong
       routes:
         - identity-idva-kong-${ENVIRONMENT_NAME}.apps.internal
@@ -32,7 +42,7 @@ apps:
     - name: outbound-proxy
       optional: true
       routes:
-        - identity-idva-outbound-proxy.apps.internal
+        - outbound-proxy-${ENVIRONMENT_NAME}.apps.internal
     - name: prometheus
       routes:
         - identity-idva-monitoring-prometheus-${ENVIRONMENT_NAME}.apps.internal
