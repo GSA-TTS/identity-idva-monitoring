@@ -12,16 +12,6 @@ import analyticsconstants
 import analyticsutils
 
 
-def convert_end_date_to_int_date(end_date: str) -> int:
-    """
-    Converts a string formatted end date to an int representing the date.
-    """
-    if end_date:
-        return int(parser.parse(end_date).timestamp())
-
-    return int(datetime.now().timestamp())
-
-
 def create_bulk_delete_action(index: str, document_id: str) -> dict:
     """
     Creates an individual Bulk API delete action.
@@ -78,8 +68,8 @@ class AnalyticsQuery:
         self.index_pattern = index_pattern
         self.query = query
         self.flow_id = cmd_line_args.flow_id
-        start_date = self.convert_start_date_to_int_date(cmd_line_args.start_date)
-        end_date = convert_end_date_to_int_date(cmd_line_args.end_date)
+        start_date = self.convert_date_to_timestamp(cmd_line_args.start_date)
+        end_date = self.convert_date_to_timestamp(cmd_line_args.end_date, end_date=True)
         self.date = {"start_date": start_date, "end_date": end_date}
         self.metric_definition = analyticsconstants.METRIC_DEFINITIONS[metric]
         self.mappings = analyticsutils.get_mappings(
@@ -89,19 +79,14 @@ class AnalyticsQuery:
             cmd_line_args.base_url,
         )
 
-    def convert_start_date_to_int_date(self, start_date: str) -> int:
+    def convert_date_to_timestamp(self, date, end_date=False) -> int:
         """
-        Converts a string formatted start date to an int representing the date.
+        Converts a string formatted date to an int timestamp representing the date.
         """
-        if start_date:
-            # A start date was provided to the query.
-            return int(parser.parse(start_date).timestamp())
-
-        if not self.elasticsearch.indices.get_alias(f"{self.index_pattern}-*"):
-            # A start date was not provided to the query and the dev-analytics index doesn't exist.
-            return int((datetime.now() - analyticsconstants.FIVE_MINS).timestamp())
-
-        # A start date was not provided when running and the dev-analytics index does exist.
+        if date:
+            return int(parser.parse(date).timestamp())
+        if end_date:
+            return int(datetime.now().timestamp())
         return self.get_most_recent_timestamp()
 
     def create_index(self, new_index: str) -> None:
@@ -113,9 +98,15 @@ class AnalyticsQuery:
 
     def get_most_recent_timestamp(self) -> int:
         """
-        Retrieves the 5 minutes before the timestamp of the most recent document in dev-analytics-*,
-        as determined by the tsEms field.
+        Retrieves the timestamp of five minutes prior to the most recent document in analytics-*,
+        as determined by the tsEms field. If the analytics-* index pattern does not exist, retrieve
+        the timestamp of five minutes prior to the current time.
         """
+        if not self.elasticsearch.indices.get_alias(f"{self.index_pattern}-*"):
+            # The analytics-* index pattern doesn't exist.
+            return int((datetime.now() - analyticsconstants.FIVE_MINS).timestamp())
+
+        # query to obtain the most recent timestamp
         newest_timestamp_query = {
             "query": {
                 "bool": {
