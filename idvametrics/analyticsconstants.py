@@ -10,3 +10,20 @@ SK_INDEX_PATTERN = "dev-skevents-*"
 DEFAULT_NUM_COMPOSITE_BUCKETS = 100
 FIVE_MINS = timedelta(minutes=5)
 ONE_DAY = timedelta(days=1)
+METRIC_DEFINITIONS = {
+    "connector_pass_rate": {
+        "metric": "connector_pass_rate",
+        "metric_keys": ["flowId", "interactionId", "id", "tsEms"],
+        "document_keys": ["id", "connectionId", {"property": "outcomeStatus"}],
+    },
+    "connector_response_time": {
+        "metric": "connector_response_time",
+        "metric_keys": ["interactionId", "id"],
+        "document_keys": ["sessionLength"],
+    },
+    "interaction_response_time": {
+        "metric": "interaction_response_time",
+        "metric_keys": ["interactionId"],
+        "document_keys": ["sessionLength"],
+    },
+}

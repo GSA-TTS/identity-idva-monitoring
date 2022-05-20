@@ -7,8 +7,9 @@ from datetime import datetime
 from hashlib import sha256
 from typing import Any
 from dateutil import parser
-from opensearchpy import helpers
+from opensearchpy import OpenSearch, helpers
 import analyticsconstants
+import analyticsutils
 
 
 def convert_end_date_to_int_date(end_date: str) -> int:
@@ -68,26 +69,25 @@ class AnalyticsQuery:
     the dev-analytics-* index pattern.
     """
 
-    def __init__(self, **kwargs):
-        keys = kwargs.keys()
-        self.elasticsearch = kwargs["elasticsearch"]
-        self.index_pattern = kwargs["index_pattern"]
-        self.query = kwargs["query"]
-        self.flow_id = kwargs["flow_id"]
-        self.num_composite_buckets = (
-            kwargs["num_composite_buckets"] if "num_composite_buckets" in keys else None
+    def __init__(self, query, index_pattern, metric):
+        cmd_line_args = analyticsutils.get_command_line_arguments()
+        self.elasticsearch = OpenSearch(
+            hosts=[{"host": cmd_line_args.host, "port": cmd_line_args.port}],
+            timeout=300,
         )
-        start_date = self.convert_start_date_to_int_date(kwargs["start_date"])
-        end_date = convert_end_date_to_int_date(kwargs["end_date"])
+        self.index_pattern = index_pattern
+        self.query = query
+        self.flow_id = cmd_line_args.flow_id
+        start_date = self.convert_start_date_to_int_date(cmd_line_args.start_date)
+        end_date = convert_end_date_to_int_date(cmd_line_args.end_date)
         self.date = {"start_date": start_date, "end_date": end_date}
-        document_keys = kwargs["document_keys"] if "document_keys" in keys else None
-        self.analytics = {
-            "eventMessage": kwargs["event_message"],
-            "mappings": kwargs["mappings"],
-            "metric": kwargs["metric"],
-            "metric_key": kwargs["metric_key"],
-            "document_keys": dict(document_keys),
-        }
+        self.metric_definition = analyticsconstants.METRIC_DEFINITIONS[metric]
+        self.mappings = analyticsutils.get_mappings(
+            cmd_line_args.flow_id,
+            cmd_line_args.username,
+            cmd_line_args.password,
+            cmd_line_args.base_url,
+        )
 
     def convert_start_date_to_int_date(self, start_date: str) -> int:
         """
@@ -155,16 +155,16 @@ class CompositeAggregationQuery(AnalyticsQuery):
     Class representing an Elasticsearch composite aggregation query.
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, query, index_pattern, metric):
+        super().__init__(query, index_pattern, metric)
         self.format_query()
 
     def create_document_id(self, metric_keys) -> str:
         """
         Creates a document identifier, which is determined by the query metric and a metric key.
         """
-        document_id = f"{self.analytics['metric']}"
-        for key in self.analytics["metric_key"]:
+        document_id = f"{self.metric_definition['metric']}"
+        for key in self.metric_definition["metric_keys"]:
             document_id += f"-{metric_keys[key]}"
 
         return document_id
@@ -182,17 +182,16 @@ class CompositeAggregationQuery(AnalyticsQuery):
             "min_date": min_date,
             "companyId": source["companyId"],
             "flowId": source["flowId"],
-            "flowName": self.analytics["mappings"]["flow_name"],
-            "eventMessage": self.analytics["event_message"],
-            "metric": self.analytics["metric"],
+            "flowName": self.mappings["flow_name"],
+            "metric": self.metric_definition["metric"],
             "metric_key": bucket["key"],
         }
 
         # Adding additional query-specific data to the document.
-        for document_key in self.analytics["document_keys"]:
+        for document_key in self.metric_definition["document_keys"]:
             document[document_key] = bucket[document_key]["value"]
 
-        for key in self.analytics["metric_key"]:
+        for key in self.metric_definition["metric_keys"]:
             document[key] = bucket["key"][key]
 
         # Adding connectorId and nodeName to the document, if required.
@@ -202,9 +201,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             document["connectorId"] = connector_id
             node_id = document["id"]
             try:
-                node = [
-                    e for e in self.analytics["mappings"]["nodes"] if e["id"] == node_id
-                ][0]
+                node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
                 title = node["title"]
                 document["nodeName"] = f"{connector_id} {title}"
             except IndexError:
@@ -223,7 +220,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
         Ensures the query performs the composite aggregation on a search of a specific flow id for a
         specific time range.
         """
-        size = {"size": self.num_composite_buckets}
+        size = {"size": analyticsconstants.DEFAULT_NUM_COMPOSITE_BUCKETS}
         update_nested_key(self.query, ["aggs", "composite_buckets", "composite"], size)
 
         # Requiring a max and min aggregation for the timestamp.
@@ -335,7 +332,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
         # buckets to process.
         while (
             len(query_result["aggregations"]["composite_buckets"]["buckets"])
-            == self.num_composite_buckets
+            == analyticsconstants.DEFAULT_NUM_COMPOSITE_BUCKETS
         ):
             query_after_key = self.process_composite_aggregation_data(query_result)
             query_composite = self.query["aggs"]["composite_buckets"]["composite"]
@@ -352,8 +349,8 @@ class ScanQuery(AnalyticsQuery):
     Class representing an Elasticsearch scan query.
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, query, index_pattern, metric):
+        super().__init__(query, index_pattern, metric)
         self.format_query()
 
     def run_query(self) -> Any:
@@ -368,8 +365,8 @@ class ScanQuery(AnalyticsQuery):
         """
         Creates a document identifier, which is determined by the query metric and a metric key.
         """
-        document_id = f"{self.analytics['metric']}"
-        for key in self.analytics["metric_key"]:
+        document_id = f"{self.metric_definition['metric']}"
+        for key in self.metric_definition["metric_keys"]:
             try:
                 document_id += f"-{hit[key]}"
             except KeyError:
@@ -389,8 +386,8 @@ class ScanQuery(AnalyticsQuery):
         query_range = {
             "range": {
                 "tsEms": {
-                    "gte": self.analytics["start_date"],
-                    "lte": self.analytics["end_date"],
+                    "gte": self.date["start_date"],
+                    "lte": self.date["end_date"],
                     "format": "epoch_second",
                 }
             }
@@ -412,7 +409,7 @@ class ScanQuery(AnalyticsQuery):
         Builds the metric_key field for an Elasticsearch analytics document.
         """
         metric_key = {}
-        for key in self.analytics["metric_key"]:
+        for key in self.metric_definition["metric_keys"]:
             metric_key[key] = source[key]
 
         return metric_key
@@ -426,16 +423,15 @@ class ScanQuery(AnalyticsQuery):
             "companyId": source["companyId"],
             "doc_count": 1,
             "connectorId": source["connectorId"],
-            "eventMessage": self.analytics["event_message"],
             "flowId": self.flow_id,
-            "flowName": self.analytics["mappings"]["flow_name"],
+            "flowName": self.mappings["flow_name"],
             "max_date": parser.parse(source["tsEms"]),
-            "metric": self.analytics["metric"],
+            "metric": self.metric_definition["metric"],
             "metric_key": self.build_metric_key(source),
         }
 
         # Adding query specific fields and data to the document.
-        for document_key in self.analytics["document_keys"]:
+        for document_key in self.metric_definition["document_keys"]:
             if isinstance(document_key, dict):
                 doc_property = document_key["property"]
                 document[doc_property] = source["properties"][doc_property]["value"]
@@ -447,9 +443,7 @@ class ScanQuery(AnalyticsQuery):
         if "id" in keys:
             node_id = document["id"]
             try:
-                node = [
-                    e for e in self.analytics["mappings"]["nodes"] if e["id"] == node_id
-                ][0]
+                node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
                 document["nodeName"] = f'{document["connectorId"]} {node["title"]}'
             except IndexError:
                 document["nodeName"] = f'{document["connectorId"]}'
