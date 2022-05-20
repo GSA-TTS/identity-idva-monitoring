@@ -7,6 +7,33 @@ import sys
 import requests
 
 
+def create_bulk_delete_action(index: str, document_id: str) -> dict:
+    """
+    Creates an individual Bulk API delete action.
+    """
+    return {
+        "_op_type": "delete",
+        "_index": index,
+        "_type": "_doc",
+        "_id": document_id,
+    }
+
+
+def create_bulk_index_action(
+    index_to_update: str, document_id: str, document: dict
+) -> dict:
+    """
+    Creates an individual Bulk API index action.
+    """
+    return {
+        "_index": index_to_update,
+        "_type": "_doc",
+        "_id": document_id,
+        "_source": document,
+        "_op_type": "index",
+    }
+
+
 def get_command_line_arguments():
     """
     Returns command line argument names and values.
@@ -86,3 +113,15 @@ def get_mappings(flow_id: str, email: str, password: str, base_url: str) -> dict
         "nodes": node_mappings,
     }
     return ids_names_mapping
+
+
+def update_nested_key(dictionary: dict, key_path: list, value: dict) -> None:
+    """
+    Updates a dictionary at the nested key defined by key_path with value, adding
+    the nested keys if they do not exist
+    """
+    curr_dict = dictionary
+    for key in key_path:
+        curr_dict = curr_dict.setdefault(key, {})
+
+    curr_dict.update(value)

@@ -17,21 +17,21 @@ def main() -> None:
     connector_pass_rate = ScanQuery(
         queries.connector_pass_rate,
         analyticsconstants.EVENTS_INDEX_PATTERN,
-        "connector_pass_rate",
+        analyticsconstants.METRIC_DEFINITIONS["connector_pass_rate"],
     )
     connector_pass_rate.send_query_and_evaluate_results()
 
     connector_response_time = ScanQuery(
         queries.connector_response_time,
         analyticsconstants.SK_INDEX_PATTERN,
-        "connector_response_time",
+        analyticsconstants.METRIC_DEFINITIONS["connector_response_time"],
     )
     connector_response_time.send_query_and_evaluate_results()
 
     workflow_response_time = CompositeAggregationQuery(
         queries.workflow_response_time,
         analyticsconstants.SK_INDEX_PATTERN,
-        "interaction_response_time",
+        analyticsconstants.METRIC_DEFINITIONS["interaction_response_time"],
     )
     workflow_response_time.send_query_and_evaluate_results()
 

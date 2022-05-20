@@ -12,45 +12,6 @@ import analyticsconstants
 import analyticsutils
 
 
-def create_bulk_delete_action(index: str, document_id: str) -> dict:
-    """
-    Creates an individual Bulk API delete action.
-    """
-    return {
-        "_op_type": "delete",
-        "_index": index,
-        "_type": "_doc",
-        "_id": document_id,
-    }
-
-
-def create_bulk_index_action(
-    index_to_update: str, document_id: str, document: dict
-) -> dict:
-    """
-    Creates an individual Bulk API index action.
-    """
-    return {
-        "_index": index_to_update,
-        "_type": "_doc",
-        "_id": document_id,
-        "_source": document,
-        "_op_type": "index",
-    }
-
-
-def update_nested_key(dictionary: dict, key_path: list, value: dict) -> None:
-    """
-    Updates a dictionary at the nested key defined by key_path with value, adding
-    the nested keys if they do not exist
-    """
-    curr_dict = dictionary
-    for key in key_path:
-        curr_dict = curr_dict.setdefault(key, {})
-
-    curr_dict.update(value)
-
-
 class AnalyticsQuery:
     """
     The base class for creating objects representing an Elasticsearch query.
@@ -59,7 +20,7 @@ class AnalyticsQuery:
     the dev-analytics-* index pattern.
     """
 
-    def __init__(self, query, index_pattern, metric):
+    def __init__(self, query, index_pattern, metric_definition):
         cmd_line_args = analyticsutils.get_command_line_arguments()
         self.elasticsearch = OpenSearch(
             hosts=[{"host": cmd_line_args.host, "port": cmd_line_args.port}],
@@ -71,7 +32,7 @@ class AnalyticsQuery:
         start_date = self.convert_date_to_timestamp(cmd_line_args.start_date)
         end_date = self.convert_date_to_timestamp(cmd_line_args.end_date, end_date=True)
         self.date = {"start_date": start_date, "end_date": end_date}
-        self.metric_definition = analyticsconstants.METRIC_DEFINITIONS[metric]
+        self.metric_definition = metric_definition
         self.mappings = analyticsutils.get_mappings(
             cmd_line_args.flow_id,
             cmd_line_args.username,
@@ -212,15 +173,17 @@ class CompositeAggregationQuery(AnalyticsQuery):
         specific time range.
         """
         size = {"size": analyticsconstants.DEFAULT_NUM_COMPOSITE_BUCKETS}
-        update_nested_key(self.query, ["aggs", "composite_buckets", "composite"], size)
+        analyticsutils.update_nested_key(
+            self.query, ["aggs", "composite_buckets", "composite"], size
+        )
 
         # Requiring a max and min aggregation for the timestamp.
-        update_nested_key(
+        analyticsutils.update_nested_key(
             self.query,
             ["aggs", "composite_buckets", "aggs", "max"],
             {"max": {"field": "tsEms"}},
         )
-        update_nested_key(
+        analyticsutils.update_nested_key(
             self.query,
             ["aggs", "composite_buckets", "aggs", "min"],
             {"min": {"field": "tsEms"}},
@@ -248,7 +211,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             must = {
                 "must": [match_phrase, query_range],
             }
-            update_nested_key(self.query, ["query", "bool"], must)
+            analyticsutils.update_nested_key(self.query, ["query", "bool"], must)
 
     def process_composite_aggregation_data(self, query_result: dict) -> str:
         """
@@ -284,7 +247,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
                 index = f"{analyticsconstants.ANALYTICS_INDEX_PATTERN}-{index_date}"
 
                 if self.elasticsearch.exists(index, document_id):
-                    bulk_actions.append(create_bulk_delete_action(index, document_id))
+                    bulk_actions.append(
+                        analyticsutils.create_bulk_delete_action(index, document_id)
+                    )
                     break
 
                 min_date += analyticsconstants.ONE_DAY
@@ -298,7 +263,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
             )
 
             bulk_actions.append(
-                create_bulk_index_action(index_to_update, document_id, document)
+                analyticsutils.create_bulk_index_action(
+                    index_to_update, document_id, document
+                )
             )
 
         # sending the bulk request to Elasticsearch
@@ -393,7 +360,7 @@ class ScanQuery(AnalyticsQuery):
             must = {
                 "must": [match_flow_id, query_range],
             }
-            update_nested_key(self.query, ["query", "bool"], must)
+            analyticsutils.update_nested_key(self.query, ["query", "bool"], must)
 
     def build_metric_key(self, source):
         """
@@ -466,7 +433,7 @@ class ScanQuery(AnalyticsQuery):
 
             # Creating the bulk index action for the document and adding it to the list of bulk
             # actions that are sent.
-            bulk_action = create_bulk_index_action(
+            bulk_action = analyticsutils.create_bulk_index_action(
                 index_to_update, document_id, document
             )
             bulk_actions.append(bulk_action)
