@@ -21,7 +21,7 @@ def main() -> None:
     )
     connector_pass_rate.send_query_and_evaluate_results()
 
-    connector_response_time = CompositeAggregationQuery(
+    connector_response_time = ScanQuery(
         queries.connector_response_time,
         analyticsconstants.SK_INDEX_PATTERN,
         "connector_response_time",

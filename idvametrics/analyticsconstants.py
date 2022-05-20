@@ -18,8 +18,8 @@ METRIC_DEFINITIONS = {
     },
     "connector_response_time": {
         "metric": "connector_response_time",
-        "metric_keys": ["interactionId", "id"],
-        "document_keys": ["sessionLength"],
+        "metric_keys": ["interactionId", "id", "tsEms"],
+        "document_keys": ["executionTime"],
     },
     "interaction_response_time": {
         "metric": "interaction_response_time",

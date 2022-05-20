@@ -5,28 +5,7 @@ Queries for obtaining different dashboard metrics.
 # Obtains response time data for each connector.
 # rewrite, as data is already in the sk-events index, adjust query type
 connector_response_time = {
-    "query": {"bool": {"filter": [{"match_all": {}}]}},
-    "aggs": {
-        "composite_buckets": {
-            "aggs": {
-                "min": {"min": {"field": "tsEms"}},
-                "max": {"max": {"field": "tsEms"}},
-                "connectorId": {"terms": {"field": "connectorId.keyword"}},
-                "sessionLength": {
-                    "bucket_script": {
-                        "buckets_path": {"startTime": "min", "endTime": "max"},
-                        "script": "params.endTime - params.startTime",
-                    }
-                },
-            },
-            "composite": {
-                "sources": [
-                    {"interactionId": {"terms": {"field": "interactionId.keyword"}}},
-                    {"id": {"terms": {"field": "id.keyword"}}},
-                ]
-            },
-        }
-    },
+    "query": {"bool": {"must": [{"exists": {"field": "executionTime"}}]}}
 }
 
 # Obtains response time data for a flow.
