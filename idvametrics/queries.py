@@ -3,7 +3,6 @@ Queries for obtaining different dashboard metrics.
 """
 
 # Obtains response time data for each connector.
-# rewrite, as data is already in the sk-events index, adjust query type
 connector_response_time = {
     "query": {"bool": {"must": [{"exists": {"field": "executionTime"}}]}}
 }
