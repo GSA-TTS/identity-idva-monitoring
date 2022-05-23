@@ -1,0 +1,3 @@
+@hourly echo "Hello, world."
+
+@hourly cf run-task cron --command 'echo "Hello, world."' --name "task"

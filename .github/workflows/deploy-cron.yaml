@@ -1,0 +1,33 @@
+---
+name: Deploy Cron
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - 'cron/**'
+      - '.github/workflows/deploy-cron.yaml'
+      - '!**.md'  # Ignore all markdown files in the repository
+  release:
+    types: [released]
+
+jobs:
+  deploy:
+    if: github.repository_owner == '18F'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: 18F/identity-idva-cf-setup@v2
+        id: cf-setup
+        with:
+          cf-username: ${{ secrets.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+          cf-org: ${{ secrets.CF_ORG }}
+
+      - name: Deploy cron
+        run: cf push --strategy rolling
+        working-directory: ./cron
