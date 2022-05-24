@@ -48,7 +48,7 @@ class AnalyticsQuery:
             return int(parser.parse(date).timestamp())
         if end_date:
             return int(datetime.now().timestamp())
-        return self.get_most_recent_timestamp()
+        return self.__get_most_recent_timestamp()
 
     def create_index(self, new_index: str) -> None:
         """
@@ -57,7 +57,7 @@ class AnalyticsQuery:
         if not self.elasticsearch.indices.exists(new_index):
             self.elasticsearch.indices.create(index=new_index)
 
-    def get_most_recent_timestamp(self) -> int:
+    def __get_most_recent_timestamp(self) -> int:
         """
         Retrieves the timestamp of five minutes prior to the most recent document in analytics-*,
         as determined by the tsEms field. If the analytics-* index pattern does not exist, retrieve
@@ -65,7 +65,7 @@ class AnalyticsQuery:
         """
         if not self.elasticsearch.indices.get_alias(f"{self.index_pattern}-*"):
             # The analytics-* index pattern doesn't exist.
-            return int((datetime.now() - analyticsconstants.FIVE_MINS).timestamp())
+            return int(datetime.now().timestamp())
 
         # query to obtain the most recent timestamp
         newest_timestamp_query = {
@@ -109,9 +109,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
     def __init__(self, query, index_pattern, metric):
         super().__init__(query, index_pattern, metric)
-        self.format_query()
+        self.__format_query()
 
-    def create_document_id(self, metric_keys) -> str:
+    def __create_document_id(self, metric_keys) -> str:
         """
         Creates a document identifier, which is determined by the query metric and a metric key.
         """
@@ -121,7 +121,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         return document_id
 
-    def create_analytics_document(
+    def __create_analytics_document(
         self, bucket: dict, source: dict, max_date: datetime, min_date: datetime = None
     ) -> dict:
         """
@@ -161,13 +161,13 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         return document
 
-    def run_query(self) -> Any:
+    def __run_query(self) -> Any:
         """
         Runs the query against the specified Elasticsearch index.
         """
         return self.elasticsearch.search(index=self.index_pattern, body=self.query)
 
-    def format_query(self) -> None:
+    def __format_query(self) -> None:
         """
         Ensures the query performs the composite aggregation on a search of a specific flow id for a
         specific time range.
@@ -213,7 +213,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             }
             analyticsutils.update_nested_key(self.query, ["query", "bool"], must)
 
-    def process_composite_aggregation_data(self, query_result: dict) -> str:
+    def __process_composite_aggregation_data(self, query_result: dict) -> str:
         """
         Processes results from the composite aggregation query, sends data fetched from the result
         to the appropriate index using a bulk request, and prepares for further processing of
@@ -229,7 +229,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             # Creating the document id, which relies on the metric key defined in
             # bucket["key"]["agg"].
             document_id = sha256(
-                self.create_document_id(bucket["key"]).encode()
+                self.__create_document_id(bucket["key"]).encode()
             ).hexdigest()
             # The document belongs in the analytics index defined by the max_date.
             max_date = parser.parse(bucket["max"]["value_as_string"]).date()
@@ -258,7 +258,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             # requests.
             self.create_index(index_to_update)
 
-            document = self.create_analytics_document(
+            document = self.__create_analytics_document(
                 bucket, source, bucket["max"]["value_as_string"]
             )
 
@@ -284,7 +284,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
         function.
         """
         # running the Elasticsearch query
-        query_result = self.run_query()
+        query_result = self.__run_query()
 
         # processing and querying additional composite aggregation buckets until there are no more
         # buckets to process.
@@ -292,14 +292,14 @@ class CompositeAggregationQuery(AnalyticsQuery):
             len(query_result["aggregations"]["composite_buckets"]["buckets"])
             == analyticsconstants.DEFAULT_NUM_COMPOSITE_BUCKETS
         ):
-            query_after_key = self.process_composite_aggregation_data(query_result)
+            query_after_key = self.__process_composite_aggregation_data(query_result)
             query_composite = self.query["aggs"]["composite_buckets"]["composite"]
             query_composite["after"] = query_after_key
 
-            query_result = self.run_query()
+            query_result = self.__run_query()
         # processing the last set of composite aggregation buckets, if there are any to process.
         if query_result["aggregations"]["composite_buckets"]["buckets"]:
-            self.process_composite_aggregation_data(query_result)
+            self.__process_composite_aggregation_data(query_result)
 
 
 class ScanQuery(AnalyticsQuery):
@@ -309,9 +309,9 @@ class ScanQuery(AnalyticsQuery):
 
     def __init__(self, query, index_pattern, metric):
         super().__init__(query, index_pattern, metric)
-        self.format_query()
+        self.__format_query()
 
-    def run_query(self) -> Any:
+    def __run_query(self) -> Any:
         """
         Runs the query against the specified Elasticsearch index.
         """
@@ -319,7 +319,7 @@ class ScanQuery(AnalyticsQuery):
             self.elasticsearch, index=self.index_pattern, query=self.query
         )
 
-    def create_document_id(self, hit):
+    def __create_document_id(self, hit):
         """
         Creates a document identifier, which is determined by the query metric and a metric key.
         """
@@ -332,7 +332,7 @@ class ScanQuery(AnalyticsQuery):
 
         return document_id
 
-    def format_query(self):
+    def __format_query(self):
         """
         Ensures the query performs the composite aggregation on a search of a specific flow id for a
         specific time range.
@@ -362,7 +362,7 @@ class ScanQuery(AnalyticsQuery):
             }
             analyticsutils.update_nested_key(self.query, ["query", "bool"], must)
 
-    def build_metric_key(self, source):
+    def __build_metric_key(self, source):
         """
         Builds the metric_key field for an Elasticsearch analytics document.
         """
@@ -372,7 +372,7 @@ class ScanQuery(AnalyticsQuery):
 
         return metric_key
 
-    def create_analytics_document(self, source) -> dict:
+    def __create_analytics_document(self, source) -> dict:
         """
         Returns an Elasticsearch document which will be uploaded to the dev-analytics-* index
         pattern.
@@ -385,7 +385,7 @@ class ScanQuery(AnalyticsQuery):
             "flowName": self.mappings["flow_name"],
             "max_date": parser.parse(source["tsEms"]),
             "metric": self.metric_definition["metric"],
-            "metric_key": self.build_metric_key(source),
+            "metric_key": self.__build_metric_key(source),
         }
 
         # Adding query specific fields and data to the document.
@@ -413,17 +413,17 @@ class ScanQuery(AnalyticsQuery):
         Sends the Elasticsearch query and processes each bucket of the query result in a separate
         function.
         """
-        query_result = self.run_query()
+        query_result = self.__run_query()
         bulk_actions = []
 
         # Scans return all hits that satisfy the query conditions
         for hit in query_result:
             source = hit["_source"]
             # Creating the document id using sha256 hashing
-            document_id = self.create_document_id(hit).encode()
+            document_id = self.__create_document_id(hit).encode()
             document_id = sha256(document_id).hexdigest()
 
-            document = self.create_analytics_document(source)
+            document = self.__create_analytics_document(source)
 
             # Determining the appropriate index to upload the document to and creating that index
             # if it does not exist.
