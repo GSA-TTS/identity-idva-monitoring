@@ -2,9 +2,28 @@
 Provides utility functions for use in analytics scripting.
 """
 
-import argparse
+from datetime import datetime, timedelta
 import sys
+from typing import Callable
+from dateutil import parser
 import requests
+
+
+def convert_date_to_timestamp(
+    date: str = None,
+    time_delta: timedelta = timedelta(0),
+    get_recent_timestamp: Callable[[], datetime] = None,
+) -> int:
+    """
+    Converts a string formatted date to an int timestamp representing the date.
+    """
+    if date:
+        return int((parser.parse(date) - time_delta).timestamp())
+
+    if get_recent_timestamp:
+        return int(get_recent_timestamp() - time_delta)
+
+    return int(datetime.now().timestamp())
 
 
 def create_bulk_delete_action(index: str, document_id: str) -> dict:
@@ -32,24 +51,6 @@ def create_bulk_index_action(
         "_source": document,
         "_op_type": "index",
     }
-
-
-def get_command_line_arguments():
-    """
-    Returns command line argument names and values.
-    """
-    cmd_line_parser = argparse.ArgumentParser()
-    cmd_line_parser.add_argument("--host")
-    cmd_line_parser.add_argument("--port")
-    cmd_line_parser.add_argument("--flow_id")
-    cmd_line_parser.add_argument("--start_date", default=None)
-    cmd_line_parser.add_argument("--end_date", default=None)
-    cmd_line_parser.add_argument("--username")
-    cmd_line_parser.add_argument("--password")
-    cmd_line_parser.add_argument("--base_url")
-    arguments = cmd_line_parser.parse_args()
-
-    return arguments
 
 
 def get_authorization_header_to_idva_flows(

@@ -20,35 +20,33 @@ class AnalyticsQuery:
     the dev-analytics-* index pattern.
     """
 
-    def __init__(self, query, index_pattern, metric_definition):
-        cmd_line_args = analyticsutils.get_command_line_arguments()
+    def __init__(self, query, metric_definition, mappings, args):
         self.elasticsearch = OpenSearch(
-            hosts=[{"host": cmd_line_args.host, "port": cmd_line_args.port}],
+            hosts=[{"host": args.host, "port": args.port}],
             timeout=300,
         )
-        self.index_pattern = index_pattern
+        self.index_pattern = metric_definition["index_pattern"]
         self.query = query
-        self.flow_id = cmd_line_args.flow_id
-        start_date = self.convert_date_to_timestamp(cmd_line_args.start_date)
-        end_date = self.convert_date_to_timestamp(cmd_line_args.end_date, end_date=True)
-        self.date = {"start_date": start_date, "end_date": end_date}
-        self.metric_definition = metric_definition
-        self.mappings = analyticsutils.get_mappings(
-            cmd_line_args.flow_id,
-            cmd_line_args.username,
-            cmd_line_args.password,
-            cmd_line_args.base_url,
+        self.flow_id = args.flow_id
+        start_date = analyticsutils.convert_date_to_timestamp(
+            date=args.start_date,
+            time_delta=analyticsconstants.FIVE_MINS,
+            get_recent_timestamp=self.__get_most_recent_timestamp,
         )
+        end_date = analyticsutils.convert_date_to_timestamp(args.end_date)
+        self.date = {"start_date": start_date, "end_date": end_date}
+        self.metric_definition = {
+            "metric": metric_definition["metric"],
+            "metric_keys": metric_definition["metric_keys"],
+            "document_keys": metric_definition["document_keys"],
+        }
+        self.mappings = mappings
 
-    def convert_date_to_timestamp(self, date, end_date=False) -> int:
+    def send_query_and_evaluate_results(self) -> None:
         """
-        Converts a string formatted date to an int timestamp representing the date.
+        Sends the Elasticsearch query and processes each item of the query result in a separate
+        function.
         """
-        if date:
-            return int(parser.parse(date).timestamp())
-        if end_date:
-            return int(datetime.now().timestamp())
-        return self.__get_most_recent_timestamp()
 
     def create_index(self, new_index: str) -> None:
         """
@@ -57,15 +55,15 @@ class AnalyticsQuery:
         if not self.elasticsearch.indices.exists(new_index):
             self.elasticsearch.indices.create(index=new_index)
 
-    def __get_most_recent_timestamp(self) -> int:
+    def __get_most_recent_timestamp(self) -> datetime:
         """
-        Retrieves the timestamp of five minutes prior to the most recent document in analytics-*,
-        as determined by the tsEms field. If the analytics-* index pattern does not exist, retrieve
-        the timestamp of five minutes prior to the current time.
+        Retrieves the timestamp of the most recent document in analytics-*, as determined by the
+        tsEms field. If the analytics-* index pattern does not exist, or doesn't contain data for
+        the tsEms field, return the current time.
         """
         if not self.elasticsearch.indices.get_alias(f"{self.index_pattern}-*"):
             # The analytics-* index pattern doesn't exist.
-            return int(datetime.now().timestamp())
+            return datetime.now()
 
         # query to obtain the most recent timestamp
         newest_timestamp_query = {
@@ -98,8 +96,9 @@ class AnalyticsQuery:
             # Nothing in the analytics index for the given flow_id, so use the current time.
             latest_timestamp = datetime.now()
 
-        five_mins_prior = latest_timestamp - analyticsconstants.FIVE_MINS
-        return int(five_mins_prior.timestamp())
+        # five_mins_prior = latest_timestamp - analyticsconstants.FIVE_MINS
+        # return int(five_mins_prior.timestamp())
+        return latest_timestamp
 
 
 class CompositeAggregationQuery(AnalyticsQuery):
@@ -107,8 +106,8 @@ class CompositeAggregationQuery(AnalyticsQuery):
     Class representing an Elasticsearch composite aggregation query.
     """
 
-    def __init__(self, query, index_pattern, metric):
-        super().__init__(query, index_pattern, metric)
+    def __init__(self, query, metric_definition, mappings, args):
+        super().__init__(query, metric_definition, mappings, args)
         self.__format_query()
 
     def __create_document_id(self, metric_keys) -> str:
@@ -279,10 +278,6 @@ class CompositeAggregationQuery(AnalyticsQuery):
         return after_key
 
     def send_query_and_evaluate_results(self) -> None:
-        """
-        Sends the Elasticsearch query and processes each bucket of the query result in a separate
-        function.
-        """
         # running the Elasticsearch query
         query_result = self.__run_query()
 
@@ -307,8 +302,8 @@ class ScanQuery(AnalyticsQuery):
     Class representing an Elasticsearch scan query.
     """
 
-    def __init__(self, query, index_pattern, metric):
-        super().__init__(query, index_pattern, metric)
+    def __init__(self, query, metric_definition, mappings, args):
+        super().__init__(query, metric_definition, mappings, args)
         self.__format_query()
 
     def __run_query(self) -> Any:
@@ -409,10 +404,6 @@ class ScanQuery(AnalyticsQuery):
         return document
 
     def send_query_and_evaluate_results(self) -> None:
-        """
-        Sends the Elasticsearch query and processes each bucket of the query result in a separate
-        function.
-        """
         query_result = self.__run_query()
         bulk_actions = []
 
