@@ -125,7 +125,11 @@ class CompositeAggregationQuery(AnalyticsQuery):
         return document_id
 
     def __create_analytics_document(
-        self, bucket: dict, source: dict, max_date: datetime, min_date: datetime = None
+        self,
+        bucket: dict,
+        company_id: str,
+        max_date: datetime,
+        min_date: datetime = None,
     ) -> dict:
         """
         Returns an Elasticsearch document which will be uploaded to the dev-analytics-* index
@@ -135,8 +139,8 @@ class CompositeAggregationQuery(AnalyticsQuery):
             "doc_count": bucket["doc_count"],
             "max_date": max_date,
             "min_date": min_date,
-            "companyId": source["companyId"],
-            "flowId": source["flowId"],
+            "companyId": company_id,
+            "flowId": self.flow_id,
             "flowName": self.mappings["flow_name"],
             "metric": self.metric_definition["metric"],
             "metric_key": bucket["key"],
@@ -216,13 +220,32 @@ class CompositeAggregationQuery(AnalyticsQuery):
             }
             analyticsutils.update_nested_key(self.query, ["query", "bool"], must)
 
-    def __build_bulk_actions_from_query_result(self, query_result: dict) -> list:
+    def __build_bulk_deletes_of_existing_documents(
+        self, min_date: str, max_date: str, document_id: str, bulk_actions: list
+    ) -> None:
+        """
+        Build Bulk API delete actions for documents with id document_id to avoid duplication of
+        documents within the analytics index.
+        """
+        while min_date < max_date:
+            index_date = min_date.strftime("%Y.%m.%d")
+            index = f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{index_date}"
+
+            if self.elasticsearch.exists(index, document_id):
+                bulk_actions.append(
+                    analyticsutils.create_bulk_delete_action(index, document_id)
+                )
+                break
+
+            min_date += analyticsconstants.ONE_DAY
+
+    def __build_bulk_actions_from_query_result(
+        self, buckets: list, company_id: str
+    ) -> list:
         """
         From a query result, build a list of bulk API actions containing analytics documents to be
         uploaded to the anlaytics index.
         """
-        buckets = query_result["aggregations"]["composite_buckets"]["buckets"]
-        source = query_result["hits"]["hits"][0]["_source"]
 
         bulk_actions = []
         for bucket in buckets:
@@ -232,7 +255,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
                 self.__create_document_id(bucket["key"]).encode()
             ).hexdigest()
             # The document belongs in the analytics index defined by the max_date.
-            max_date = parser.parse(bucket["max"]["value_as_string"]).date()
+            max_date = parser.parse(bucket["max"]["value_as_string"])
             max_date_str = max_date.strftime("%Y.%m.%d")
             index_to_update = (
                 f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{max_date_str}"
@@ -242,25 +265,15 @@ class CompositeAggregationQuery(AnalyticsQuery):
             # index in the date range between min_date and max_date, if the document exists. This
             # ensures we don't have a document with a given document_id saved to multiple indices.
             min_date = parser.parse(bucket["min"]["value_as_string"]).date()
-            while min_date < max_date:
-                index_date = min_date.strftime("%Y.%m.%d")
-                index = f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{index_date}"
-
-                if self.elasticsearch.exists(index, document_id):
-                    bulk_actions.append(
-                        analyticsutils.create_bulk_delete_action(index, document_id)
-                    )
-                    break
-
-                min_date += analyticsconstants.ONE_DAY
+            self.__build_bulk_deletes_of_existing_documents(
+                min_date, max_date.date(), document_id, bulk_actions
+            )
 
             # If index_to_update has not yet been created, we must do so before sending it any
             # requests.
             self.create_index(index_to_update)
 
-            document = self.__create_analytics_document(
-                bucket, source, bucket["max"]["value_as_string"]
-            )
+            document = self.__create_analytics_document(bucket, company_id, max_date)
 
             bulk_actions.append(
                 analyticsutils.create_bulk_index_action(
@@ -269,7 +282,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
             )
         return bulk_actions
 
-    def __process_composite_aggregation_data(self, query_result: dict) -> str:
+    def __process_composite_aggregation_data(
+        self, buckets: list, company_id: str
+    ) -> str:
         """
         Processes results from the composite aggregation query, sends data fetched from the result
         to the appropriate index using a bulk request, and prepares for further processing of
@@ -278,7 +293,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
         Returns the identifier of the last bucket in the query result.
         """
         # building the bulk API actions
-        bulk_actions = self.__build_bulk_actions_from_query_result(query_result)
+        bulk_actions = self.__build_bulk_actions_from_query_result(buckets, company_id)
 
         # sending the bulk request to Elasticsearch
         print(f"Sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}")
@@ -287,26 +302,30 @@ class CompositeAggregationQuery(AnalyticsQuery):
             f"Finished sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}"
         )
 
-        return analyticsutils.get_composite_after_key(query_result)
-
     def send_query_and_evaluate_results(self) -> None:
+        # will contain all the composite aggregation data
+        query_buckets = []
+
         # running the Elasticsearch query
         query_result = self.__run_query()
 
         # processing and querying additional composite aggregation buckets until there are no more
         # buckets to process.
         while (
-            len(query_result["aggregations"]["composite_buckets"]["buckets"])
-            == analyticsconstants.DEFAULT_NUM_COMPOSITE_BUCKETS
+            len(buckets := query_result["aggregations"]["composite_buckets"]["buckets"])
+            > 0
         ):
-            query_after_key = self.__process_composite_aggregation_data(query_result)
+            query_buckets.extend(buckets)
+
             query_composite = self.query["aggs"]["composite_buckets"]["composite"]
+            query_after_key = analyticsutils.get_composite_after_key(query_result)
             query_composite["after"] = query_after_key
 
+            # the companyId will be the same across each hit in a given flow
+            company_id = query_result["hits"]["hits"][0]["_source"]["companyId"]
+
             query_result = self.__run_query()
-        # processing the last set of composite aggregation buckets, if there are any to process.
-        if query_result["aggregations"]["composite_buckets"]["buckets"]:
-            self.__process_composite_aggregation_data(query_result)
+        self.__process_composite_aggregation_data(query_buckets, company_id)
 
 
 class ScanQuery(AnalyticsQuery):
