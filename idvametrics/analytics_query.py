@@ -252,7 +252,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
                     )
                     break
 
-                min_date += analyticsconstants.ONE_DAY  # INDEX_DATE_DIFFERENCE
+                min_date += analyticsconstants.ONE_DAY
 
             # If index_to_update has not yet been created, we must do so before sending it any
             # requests.
