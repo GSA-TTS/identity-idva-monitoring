@@ -28,12 +28,16 @@ class AnalyticsQuery:
         self.index_pattern = metric_definition["index_pattern"]
         self.query = query
         self.flow_id = args.flow_id
-        start_date = analyticsutils.convert_date_to_timestamp(
+        start_date = analyticsutils.get_datetime_from_str(
             date=args.start_date,
-            time_delta=analyticsconstants.FIVE_MINS,
             get_recent_timestamp=self.__get_most_recent_timestamp,
         )
-        end_date = analyticsutils.convert_date_to_timestamp(args.end_date)
+        end_date = analyticsutils.get_datetime_from_str(date=args.end_date)
+        # We want the start and end dates to be int, so we must convert the result of the
+        # get_datetime_from_date function.
+        start_date = int((start_date - analyticsconstants.FIVE_MINS).timestamp())
+        end_date = int(end_date.timestamp())
+
         self.date = {"start_date": start_date, "end_date": end_date}
         self.metric_definition = {
             "metric": metric_definition["metric"],
@@ -61,7 +65,9 @@ class AnalyticsQuery:
         tsEms field. If the analytics-* index pattern does not exist, or doesn't contain data for
         the tsEms field, return the current time.
         """
-        if not self.elasticsearch.indices.get_alias(f"{self.index_pattern}-*"):
+        if not self.elasticsearch.indices.get_alias(
+            f"{analyticsconstants.ANALYTICS_INDEX_PATTERN}"
+        ):
             # The analytics-* index pattern doesn't exist.
             return datetime.now()
 
@@ -85,7 +91,7 @@ class AnalyticsQuery:
         }
 
         res = self.elasticsearch.search(
-            index=f"{analyticsconstants.ANALYTICS_INDEX_PATTERN}-*",
+            index=f"{analyticsconstants.ANALYTICS_INDEX_PATTERN}",
             body=newest_timestamp_query,
         )
         try:
@@ -96,8 +102,6 @@ class AnalyticsQuery:
             # Nothing in the analytics index for the given flow_id, so use the current time.
             latest_timestamp = datetime.now()
 
-        # five_mins_prior = latest_timestamp - analyticsconstants.FIVE_MINS
-        # return int(five_mins_prior.timestamp())
         return latest_timestamp
 
 
@@ -212,13 +216,12 @@ class CompositeAggregationQuery(AnalyticsQuery):
             }
             analyticsutils.update_nested_key(self.query, ["query", "bool"], must)
 
-    def __process_composite_aggregation_data(self, query_result: dict) -> str:
+    def __build_bulk_actions_from_query_result(
+        self, query_result: dict
+    ) -> list:
         """
-        Processes results from the composite aggregation query, sends data fetched from the result
-        to the appropriate index using a bulk request, and prepares for further processing of
-        composite query results.
-
-        Returns the identifier of the last bucket in the query result.
+        From a query result, build a list of bulk API actions containing analytics documents to be
+        uploaded to the anlaytics index.
         """
         buckets = query_result["aggregations"]["composite_buckets"]["buckets"]
         source = query_result["hits"]["hits"][0]["_source"]
@@ -234,7 +237,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             max_date = parser.parse(bucket["max"]["value_as_string"]).date()
             max_date_str = max_date.strftime("%Y.%m.%d")
             index_to_update = (
-                f"{analyticsconstants.ANALYTICS_INDEX_PATTERN}-{max_date_str}"
+                f"{analyticsconstants.ANALYTICS_INDEX_PATTERN[:-1]}{max_date_str}"
             )
 
             # Creating bulk actions for deleting the document with id document_id from an analytics
@@ -243,7 +246,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             min_date = parser.parse(bucket["min"]["value_as_string"]).date()
             while min_date < max_date:
                 index_date = min_date.strftime("%Y.%m.%d")
-                index = f"{analyticsconstants.ANALYTICS_INDEX_PATTERN}-{index_date}"
+                index = f"{analyticsconstants.ANALYTICS_INDEX_PATTERN[:-1]}{index_date}"
 
                 if self.elasticsearch.exists(index, document_id):
                     bulk_actions.append(
@@ -266,16 +269,27 @@ class CompositeAggregationQuery(AnalyticsQuery):
                     index_to_update, document_id, document
                 )
             )
+        return bulk_actions
+
+    def __process_composite_aggregation_data(self, query_result: dict) -> str:
+        """
+        Processes results from the composite aggregation query, sends data fetched from the result
+        to the appropriate index using a bulk request, and prepares for further processing of
+        composite query results.
+
+        Returns the identifier of the last bucket in the query result.
+        """
+        # building the bulk API actions
+        bulk_actions = self.__build_bulk_actions_from_query_result(query_result)
 
         # sending the bulk request to Elasticsearch
-        print(f"Sending Bulk Request to {index_to_update}")
+        print(f"Sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}")
         helpers.bulk(self.elasticsearch, bulk_actions)
-        print(f"Finished sending Bulk Request to {index_to_update}")
+        print(
+            f"Finished sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}"
+        )
 
-        # "after_key" is the identifier of the last returned bucket and will be used to return the
-        # next num_composite_buckets in the composite aggregation ordering.
-        after_key = query_result["aggregations"]["composite_buckets"]["after_key"]
-        return after_key
+        return analyticsutils.get_composite_after_key(query_result)
 
     def send_query_and_evaluate_results(self) -> None:
         # running the Elasticsearch query
@@ -403,10 +417,14 @@ class ScanQuery(AnalyticsQuery):
 
         return document
 
-    def send_query_and_evaluate_results(self) -> None:
-        query_result = self.__run_query()
+    def __build_bulk_actions_from_query_result(
+        self, query_result: list
+    ) -> list:
+        """
+        From a query result, build a list of bulk API actions containing analytics documents to be
+        uploaded to the anlaytics index.
+        """
         bulk_actions = []
-
         # Scans return all hits that satisfy the query conditions
         for hit in query_result:
             source = hit["_source"]
@@ -419,7 +437,7 @@ class ScanQuery(AnalyticsQuery):
             # Determining the appropriate index to upload the document to and creating that index
             # if it does not exist.
             date = parser.parse(source["tsEms"]).date().strftime("%Y.%m.%d")
-            index_to_update = f"{analyticsconstants.ANALYTICS_INDEX_PATTERN}-{date}"
+            index_to_update = f"{analyticsconstants.ANALYTICS_INDEX_PATTERN[:-1]}{date}"
             self.create_index(index_to_update)
 
             # Creating the bulk index action for the document and adding it to the list of bulk
@@ -428,6 +446,13 @@ class ScanQuery(AnalyticsQuery):
                 index_to_update, document_id, document
             )
             bulk_actions.append(bulk_action)
+        return bulk_actions
+
+    def send_query_and_evaluate_results(self) -> None:
+        query_result = self.__run_query()
+
+        # building the bulk API actions
+        bulk_actions = self.__build_bulk_actions_from_query_result(query_result)
         # sending the bulk request to Elasticsearch
         print(
             f"Sending Scan Query Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}"

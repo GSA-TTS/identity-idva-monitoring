@@ -2,28 +2,32 @@
 Provides utility functions for use in analytics scripting.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import sys
 from typing import Callable
 from dateutil import parser
 import requests
 
 
-def convert_date_to_timestamp(
+def get_datetime_from_str(
     date: str = None,
-    time_delta: timedelta = timedelta(0),
     get_recent_timestamp: Callable[[], datetime] = None,
-) -> int:
+) -> datetime:
     """
-    Converts a string formatted date to an int timestamp representing the date.
+    Retrieves a datetime from a given date str input. If the date input is not defined, then
+    obtain a timestamp from an elasticsearch query defined by get_recent_timestamp, or the current
+    time if that function is not defined.
     """
     if date:
-        return int((parser.parse(date) - time_delta).timestamp())
+        # The date input is defined, so we want to obtain the datetime from it.
+        return parser.parse(date)
 
     if get_recent_timestamp:
-        return int(get_recent_timestamp() - time_delta)
+        # The date input is not defined, and we want to obtain the timestamp via a function that
+        # performs an Elasticsearch query.
+        return get_recent_timestamp()
 
-    return int(datetime.now().timestamp())
+    return datetime.now()
 
 
 def create_bulk_delete_action(index: str, document_id: str) -> dict:
@@ -71,6 +75,15 @@ def get_authorization_header_to_idva_flows(
     except KeyError:
         print(json)
         sys.exit(1)
+
+
+def get_composite_after_key(query_result: dict) -> dict:
+    """
+    Obtains the after_key, which is the identifier of the last returned bucket in a composite
+    query result. The after_key will be used to retrieve the next num_composite_buckets in the
+    composite aggregation ordering.
+    """
+    return query_result["aggregations"]["composite_buckets"]["after_key"]
 
 
 def get_mappings(flow_id: str, email: str, password: str, base_url: str) -> dict:
