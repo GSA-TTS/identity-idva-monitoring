@@ -4,7 +4,8 @@ Constants for use in analytics scripting.
 
 from datetime import timedelta
 
-ANALYTICS_INDEX_PATTERN = "dev-analytics-*"
+ANALYTICS_INDEX_PREFIX = "dev-analytics"
+ANALYTICS_INDEX_PATTERN = f"{ANALYTICS_INDEX_PREFIX}-*"
 EVENTS_INDEX_PATTERN = "dev-eventsoutcome-*"
 SK_INDEX_PATTERN = "dev-skevents-*"
 DEFAULT_NUM_COMPOSITE_BUCKETS = 100

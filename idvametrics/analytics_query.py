@@ -216,9 +216,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             }
             analyticsutils.update_nested_key(self.query, ["query", "bool"], must)
 
-    def __build_bulk_actions_from_query_result(
-        self, query_result: dict
-    ) -> list:
+    def __build_bulk_actions_from_query_result(self, query_result: dict) -> list:
         """
         From a query result, build a list of bulk API actions containing analytics documents to be
         uploaded to the anlaytics index.
@@ -237,7 +235,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             max_date = parser.parse(bucket["max"]["value_as_string"]).date()
             max_date_str = max_date.strftime("%Y.%m.%d")
             index_to_update = (
-                f"{analyticsconstants.ANALYTICS_INDEX_PATTERN[:-1]}{max_date_str}"
+                f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{max_date_str}"
             )
 
             # Creating bulk actions for deleting the document with id document_id from an analytics
@@ -246,7 +244,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             min_date = parser.parse(bucket["min"]["value_as_string"]).date()
             while min_date < max_date:
                 index_date = min_date.strftime("%Y.%m.%d")
-                index = f"{analyticsconstants.ANALYTICS_INDEX_PATTERN[:-1]}{index_date}"
+                index = f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{index_date}"
 
                 if self.elasticsearch.exists(index, document_id):
                     bulk_actions.append(
@@ -254,7 +252,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
                     )
                     break
 
-                min_date += analyticsconstants.ONE_DAY
+                min_date += analyticsconstants.ONE_DAY  # INDEX_DATE_DIFFERENCE
 
             # If index_to_update has not yet been created, we must do so before sending it any
             # requests.
@@ -417,9 +415,7 @@ class ScanQuery(AnalyticsQuery):
 
         return document
 
-    def __build_bulk_actions_from_query_result(
-        self, query_result: list
-    ) -> list:
+    def __build_bulk_actions_from_query_result(self, query_result: list) -> list:
         """
         From a query result, build a list of bulk API actions containing analytics documents to be
         uploaded to the anlaytics index.
@@ -437,7 +433,7 @@ class ScanQuery(AnalyticsQuery):
             # Determining the appropriate index to upload the document to and creating that index
             # if it does not exist.
             date = parser.parse(source["tsEms"]).date().strftime("%Y.%m.%d")
-            index_to_update = f"{analyticsconstants.ANALYTICS_INDEX_PATTERN[:-1]}{date}"
+            index_to_update = f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{date}"
             self.create_index(index_to_update)
 
             # Creating the bulk index action for the document and adding it to the list of bulk
