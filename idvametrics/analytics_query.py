@@ -28,23 +28,32 @@ class AnalyticsQuery:
         self.index_pattern = metric_definition["index_pattern"]
         self.query = query
         self.flow_id = args.flow_id
-        start_date = analyticsutils.get_datetime_from_str(
-            date=args.start_date,
-            get_recent_timestamp=self.__get_most_recent_timestamp,
-        )
-        end_date = analyticsutils.get_datetime_from_str(date=args.end_date)
-        # We want the start and end dates to be int, so we must convert the result of the
-        # get_datetime_from_date function.
-        start_date = int((start_date - analyticsconstants.FIVE_MINS).timestamp())
-        end_date = int(end_date.timestamp())
-
-        self.date = {"start_date": start_date, "end_date": end_date}
+        self.date = self.__get_date(args.start_date, args.end_date)
         self.metric_definition = {
             "metric": metric_definition["metric"],
             "metric_keys": metric_definition["metric_keys"],
             "document_keys": metric_definition["document_keys"],
         }
         self.mappings = mappings
+
+    def __get_date(self, start_date: str, end_date: str):
+        """
+        Returns an object representing a time range from start_date to end_date.
+        """
+        try:
+            start = analyticsutils.epoch_time(start_date)
+        except TypeError:
+            start_timestamp = self.__get_most_recent_timestamp()
+            start = (
+                0 if not start_timestamp else analyticsutils.epoch_time(start_timestamp)
+            )
+
+        try:
+            end = analyticsutils.epoch_time(end_date)
+        except TypeError:
+            end = analyticsutils.epoch_time(datetime.now().strftime("%I:%M:%S %D"))
+
+        return {"start_date": start, "end_date": end}
 
     def send_query_and_evaluate_results(self) -> None:
         """
@@ -59,17 +68,17 @@ class AnalyticsQuery:
         if not self.elasticsearch.indices.exists(new_index):
             self.elasticsearch.indices.create(index=new_index)
 
-    def __get_most_recent_timestamp(self) -> datetime:
+    def __get_most_recent_timestamp(self) -> str:
         """
         Retrieves the timestamp of the most recent document in analytics-*, as determined by the
         tsEms field. If the analytics-* index pattern does not exist, or doesn't contain data for
-        the tsEms field, return the current time.
+        the tsEms field, return None.
         """
         if not self.elasticsearch.indices.get_alias(
-            f"{analyticsconstants.ANALYTICS_INDEX_PATTERN}"
+            analyticsconstants.ANALYTICS_INDEX_PATTERN
         ):
             # The analytics-* index pattern doesn't exist.
-            return datetime.now()
+            return None
 
         # query to obtain the most recent timestamp
         newest_timestamp_query = {
@@ -91,16 +100,16 @@ class AnalyticsQuery:
         }
 
         res = self.elasticsearch.search(
-            index=f"{analyticsconstants.ANALYTICS_INDEX_PATTERN}",
+            index=analyticsconstants.ANALYTICS_INDEX_PATTERN,
             body=newest_timestamp_query,
         )
         try:
             # Attempting to get the time of the most recent timestamp of a document in the analytics
             # index.
-            latest_timestamp = parser.parse(res["hits"]["hits"][0]["_source"]["tsEms"])
+            latest_timestamp = res["hits"]["hits"][0]["_source"]["tsEms"]
         except KeyError:
             # Nothing in the analytics index for the given flow_id, so use the current time.
-            latest_timestamp = datetime.now()
+            latest_timestamp = None
 
         return latest_timestamp
 
@@ -221,23 +230,26 @@ class CompositeAggregationQuery(AnalyticsQuery):
             analyticsutils.update_nested_key(self.query, ["query", "bool"], must)
 
     def __build_bulk_deletes_of_existing_documents(
-        self, min_date: str, max_date: str, document_id: str, bulk_actions: list
-    ) -> None:
+        self, min_date: str, max_date: str, document_id: str
+    ) -> list:
         """
         Build Bulk API delete actions for documents with id document_id to avoid duplication of
         documents within the analytics index.
         """
+        bulk_deletes = []
+
         while min_date < max_date:
             index_date = min_date.strftime("%Y.%m.%d")
             index = f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{index_date}"
 
             if self.elasticsearch.exists(index, document_id):
-                bulk_actions.append(
+                bulk_deletes.append(
                     analyticsutils.create_bulk_delete_action(index, document_id)
                 )
                 break
 
             min_date += analyticsconstants.ONE_DAY
+        return bulk_deletes
 
     def __build_bulk_actions_from_query_result(
         self, buckets: list, company_id: str
@@ -265,9 +277,10 @@ class CompositeAggregationQuery(AnalyticsQuery):
             # index in the date range between min_date and max_date, if the document exists. This
             # ensures we don't have a document with a given document_id saved to multiple indices.
             min_date = parser.parse(bucket["min"]["value_as_string"]).date()
-            self.__build_bulk_deletes_of_existing_documents(
-                min_date, max_date.date(), document_id, bulk_actions
+            bulk_deletes = self.__build_bulk_deletes_of_existing_documents(
+                min_date, max_date.date(), document_id
             )
+            bulk_actions.extend(bulk_deletes)
 
             # If index_to_update has not yet been created, we must do so before sending it any
             # requests.

@@ -2,32 +2,18 @@
 Provides utility functions for use in analytics scripting.
 """
 
-from datetime import datetime
 import sys
-from typing import Callable
 from dateutil import parser
 import requests
 
 
-def get_datetime_from_str(
+def epoch_time(
     date: str = None,
-    get_recent_timestamp: Callable[[], datetime] = None,
-) -> datetime:
+) -> int:
     """
-    Retrieves a datetime from a given date str input. If the date input is not defined, then
-    obtain a timestamp from an elasticsearch query defined by get_recent_timestamp, or the current
-    time if that function is not defined.
+    Obtains the epoch time of a given date.
     """
-    if date:
-        # The date input is defined, so we want to obtain the datetime from it.
-        return parser.parse(date)
-
-    if get_recent_timestamp:
-        # The date input is not defined, and we want to obtain the timestamp via a function that
-        # performs an Elasticsearch query.
-        return get_recent_timestamp()
-
-    return datetime.now()
+    return int(parser.parse(date).timestamp())
 
 
 def create_bulk_delete_action(index: str, document_id: str) -> dict:
