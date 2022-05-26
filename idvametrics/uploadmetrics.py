@@ -5,10 +5,33 @@ visualizations.
 """
 
 import argparse
-import analyticsconstants
-from analyticsquery import CompositeAggregationQuery, ScanQuery
+import analyticsquery
 import analyticsutils
 import queries
+
+
+EVENTS_INDEX_PATTERN = "dev-eventsoutcome-*"
+SK_INDEX_PATTERN = "dev-skevents-*"
+METRIC_DEFINITIONS = {
+    "connector_pass_rate": {
+        "index_pattern": EVENTS_INDEX_PATTERN,
+        "metric": "connector_pass_rate",
+        "metric_keys": ["flowId", "interactionId", "id", "tsEms"],
+        "document_keys": ["id", "connectionId", {"property": "outcomeStatus"}],
+    },
+    "connector_response_time": {
+        "index_pattern": SK_INDEX_PATTERN,
+        "metric": "connector_response_time",
+        "metric_keys": ["interactionId", "id", "tsEms"],
+        "document_keys": ["executionTime"],
+    },
+    "interaction_response_time": {
+        "index_pattern": SK_INDEX_PATTERN,
+        "metric": "interaction_response_time",
+        "metric_keys": ["interactionId"],
+        "document_keys": ["sessionLength"],
+    },
+}
 
 
 def get_command_line_arguments():
@@ -43,25 +66,25 @@ def main() -> None:
         arguments.base_url,
     )
 
-    connector_pass_rate = ScanQuery(
+    connector_pass_rate = analyticsquery.ScanQuery(
         queries.connector_pass_rate,
-        analyticsconstants.METRIC_DEFINITIONS["connector_pass_rate"],
+        METRIC_DEFINITIONS["connector_pass_rate"],
         mappings,
         arguments,
     )
     connector_pass_rate.run()
 
-    connector_response_time = ScanQuery(
+    connector_response_time = analyticsquery.ScanQuery(
         queries.connector_response_time,
-        analyticsconstants.METRIC_DEFINITIONS["connector_response_time"],
+        METRIC_DEFINITIONS["connector_response_time"],
         mappings,
         arguments,
     )
     connector_response_time.run()
 
-    workflow_response_time = CompositeAggregationQuery(
+    workflow_response_time = analyticsquery.CompositeAggregationQuery(
         queries.workflow_response_time,
-        analyticsconstants.METRIC_DEFINITIONS["interaction_response_time"],
+        METRIC_DEFINITIONS["interaction_response_time"],
         mappings,
         arguments,
     )

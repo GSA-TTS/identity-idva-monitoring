@@ -8,8 +8,11 @@ from hashlib import sha256
 from typing import Any
 from dateutil import parser
 from opensearchpy import OpenSearch, helpers
-import analyticsconstants
 import analyticsutils
+
+ANALYTICS_INDEX_PREFIX = "dev-analytics"
+ANALYTICS_INDEX_PATTERN = f"{ANALYTICS_INDEX_PREFIX}-*"
+DEFAULT_NUM_COMPOSITE_BUCKETS = 10
 
 
 class AnalyticsQuery:
@@ -73,9 +76,7 @@ class AnalyticsQuery:
         tsEms field. If the analytics-* index pattern does not exist, or doesn't contain data for
         the tsEms field, return None.
         """
-        if not self.elasticsearch.indices.get_alias(
-            analyticsconstants.ANALYTICS_INDEX_PATTERN
-        ):
+        if not self.elasticsearch.indices.get_alias(ANALYTICS_INDEX_PATTERN):
             # The analytics-* index pattern doesn't exist.
             return None
 
@@ -99,7 +100,7 @@ class AnalyticsQuery:
         }
 
         res = self.elasticsearch.search(
-            index=analyticsconstants.ANALYTICS_INDEX_PATTERN,
+            index=ANALYTICS_INDEX_PATTERN,
             body=newest_timestamp_query,
         )
         try:
@@ -187,7 +188,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
         Ensures the query performs the composite aggregation on a search of a specific flow id for a
         specific time range.
         """
-        size = {"size": analyticsconstants.DEFAULT_NUM_COMPOSITE_BUCKETS}
+        size = {"size": DEFAULT_NUM_COMPOSITE_BUCKETS}
         analyticsutils.update_nested_key(
             self.query, ["aggs", "composite_buckets", "composite"], size
         )
@@ -239,7 +240,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         while min_date < max_date:
             index_date = min_date.strftime("%Y.%m.%d")
-            index = f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{index_date}"
+            index = f"{ANALYTICS_INDEX_PREFIX}-{index_date}"
 
             if self.elasticsearch.exists(index, document_id):
                 bulk_deletes.append(
@@ -269,9 +270,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             # The document belongs in the analytics index defined by the max_date.
             max_date = parser.parse(bucket["max"]["value_as_string"])
             max_date_str = max_date.strftime("%Y.%m.%d")
-            index_to_update = (
-                f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{max_date_str}"
-            )
+            index_to_update = f"{ANALYTICS_INDEX_PREFIX}-{max_date_str}"
 
             # Creating bulk actions for deleting the document with id document_id from an analytics
             # index in the date range between min_date and max_date, if the document exists. This
@@ -323,11 +322,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
         bulk_actions = self.__build_bulk_actions_from_query_result(buckets, company_id)
 
         # sending the bulk request to Elasticsearch
-        print(f"Sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}")
+        print(f"Sending Bulk Request to {ANALYTICS_INDEX_PATTERN}")
         helpers.bulk(self.elasticsearch, bulk_actions)
-        print(
-            f"Finished sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}"
-        )
+        print(f"Finished sending Bulk Request to {ANALYTICS_INDEX_PATTERN}")
 
 
 class ScanQuery(AnalyticsQuery):
@@ -454,7 +451,7 @@ class ScanQuery(AnalyticsQuery):
             # Determining the appropriate index to upload the document to and creating that index
             # if it does not exist.
             date = parser.parse(source["tsEms"]).date().strftime("%Y.%m.%d")
-            index_to_update = f"{analyticsconstants.ANALYTICS_INDEX_PREFIX}-{date}"
+            index_to_update = f"{ANALYTICS_INDEX_PREFIX}-{date}"
             self.create_index(index_to_update)
 
             # Creating the bulk index action for the document and adding it to the list of bulk
@@ -471,10 +468,6 @@ class ScanQuery(AnalyticsQuery):
         # building the bulk API actions
         bulk_actions = self.__build_bulk_actions_from_query_result(query_result)
         # sending the bulk request to Elasticsearch
-        print(
-            f"Sending Scan Query Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}"
-        )
+        print(f"Sending Scan Query Bulk Request to {ANALYTICS_INDEX_PATTERN}")
         helpers.bulk(self.elasticsearch, bulk_actions)
-        print(
-            f"Finished Scan Query Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}"
-        )
+        print(f"Finished Scan Query Bulk Request to {ANALYTICS_INDEX_PATTERN}")
