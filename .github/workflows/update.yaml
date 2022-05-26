@@ -18,7 +18,7 @@ jobs:
       - name: Check Version of Prometheus
         run: ./version_updater.sh ./prometheus/VERSION https://api.github.com/repos/prometheus/prometheus/releases/latest
 
-      - uses: crazy-max/ghaction-import-gpg@v4.4.0
+      - uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -47,7 +47,7 @@ jobs:
       - name: Check Version of Alertmanager
         run: ./version_updater.sh ./alertmanager/VERSION https://api.github.com/repos/prometheus/alertmanager/releases/latest
 
-      - uses: crazy-max/ghaction-import-gpg@v4.4.0
+      - uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -76,7 +76,7 @@ jobs:
       - name: Check Version of Cortex
         run: ./version_updater.sh ./cortex/VERSION https://api.github.com/repos/cortexproject/cortex/releases/latest
 
-      - uses: crazy-max/ghaction-import-gpg@v4.4.0
+      - uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -105,7 +105,7 @@ jobs:
       - name: Check Version of Grafana
         run: ./version_updater.sh ./grafana/VERSION https://api.github.com/repos/grafana/grafana/releases/latest
 
-      - uses: crazy-max/ghaction-import-gpg@v4.4.0
+      - uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -134,7 +134,7 @@ jobs:
       - name: Check Version of Watchtower
         run: ./version_updater.sh ./watchtower/VERSION https://api.github.com/repos/18F/watchtower/releases/latest
 
-      - uses: crazy-max/ghaction-import-gpg@v4.4.0
+      - uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
