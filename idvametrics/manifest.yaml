@@ -5,7 +5,7 @@ applications:
     - python_buildpack
   no-route: true
   command: |
-    python3 upload_metrics.py \
+    python3 main.py \
       --host identity-idva-es-proxy-((ENVIRONMENT_NAME)).apps.internal \
       --port 8080 \
       --flow_id ((FLOW_ID)) \
