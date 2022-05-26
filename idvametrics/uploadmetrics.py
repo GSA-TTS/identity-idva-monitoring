@@ -6,7 +6,7 @@ visualizations.
 
 import argparse
 import analyticsconstants
-from analytics_query import CompositeAggregationQuery, ScanQuery
+from analyticsquery import CompositeAggregationQuery, ScanQuery
 import analyticsutils
 import queries
 
