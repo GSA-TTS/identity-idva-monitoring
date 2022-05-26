@@ -19,6 +19,7 @@ def get_command_line_arguments():
     cmd_line_parser.add_argument("--host")
     cmd_line_parser.add_argument("--port")
     cmd_line_parser.add_argument("--flow_id")
+
     cmd_line_parser.add_argument("--start_date", default=None)
     cmd_line_parser.add_argument("--end_date", default=None)
     cmd_line_parser.add_argument("--username")
@@ -48,7 +49,7 @@ def main() -> None:
         mappings,
         arguments,
     )
-    connector_pass_rate.send_query_and_evaluate_results()
+    connector_pass_rate.run()
 
     connector_response_time = ScanQuery(
         queries.connector_response_time,
@@ -56,7 +57,7 @@ def main() -> None:
         mappings,
         arguments,
     )
-    connector_response_time.send_query_and_evaluate_results()
+    connector_response_time.run()
 
     workflow_response_time = CompositeAggregationQuery(
         queries.workflow_response_time,
@@ -64,7 +65,7 @@ def main() -> None:
         mappings,
         arguments,
     )
-    workflow_response_time.send_query_and_evaluate_results()
+    workflow_response_time.run()
 
 
 if __name__ == "__main__":

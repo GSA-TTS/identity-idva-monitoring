@@ -3,17 +3,16 @@ Provides utility functions for use in analytics scripting.
 """
 
 import sys
+from datetime import timedelta
 from dateutil import parser
 import requests
 
 
-def epoch_time(
-    date: str = None,
-) -> int:
+def epoch_time(date: str = None, time_delta: timedelta = timedelta(0)) -> int:
     """
     Obtains the epoch time of a given date.
     """
-    return int(parser.parse(date).timestamp())
+    return int((parser.parse(date) - time_delta).timestamp())
 
 
 def create_bulk_delete_action(index: str, document_id: str) -> dict:

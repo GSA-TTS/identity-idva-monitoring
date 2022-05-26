@@ -3,7 +3,7 @@ Provides classes representing Elasticsearch queries and functionality for runnin
 against a server and uploading to an index.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from hashlib import sha256
 from typing import Any
 from dateutil import parser
@@ -40,25 +40,24 @@ class AnalyticsQuery:
         """
         Returns an object representing a time range from start_date to end_date.
         """
-        try:
+        if start_date:
             start = analyticsutils.epoch_time(start_date)
-        except TypeError:
-            start_timestamp = self.__get_most_recent_timestamp()
-            start = (
-                0 if not start_timestamp else analyticsutils.epoch_time(start_timestamp)
-            )
+        elif start := self.__get_most_recent_timestamp():
+            analytics_time_offset = timedelta(minutes=5)
+            start = analyticsutils.epoch_time(start, analytics_time_offset)
+        else:
+            start = 0
 
-        try:
+        if end_date:
             end = analyticsutils.epoch_time(end_date)
-        except TypeError:
-            end = analyticsutils.epoch_time(datetime.now().strftime("%I:%M:%S %D"))
+        else:
+            end = int(datetime.now().timestamp())
 
         return {"start_date": start, "end_date": end}
 
-    def send_query_and_evaluate_results(self) -> None:
+    def run(self) -> None:
         """
-        Sends the Elasticsearch query and processes each item of the query result in a separate
-        function.
+        Runs the Elasticsearch query and processes the query result.
         """
 
     def create_index(self, new_index: str) -> None:
@@ -138,7 +137,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
         bucket: dict,
         company_id: str,
         max_date: datetime,
-        min_date: datetime = None,
+        min_date: datetime | None = None,
     ) -> dict:
         """
         Returns an Elasticsearch document which will be uploaded to the dev-analytics-* index
@@ -177,7 +176,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         return document
 
-    def __run_query(self) -> Any:
+    def __query(self) -> Any:
         """
         Runs the query against the specified Elasticsearch index.
         """
@@ -248,7 +247,8 @@ class CompositeAggregationQuery(AnalyticsQuery):
                 )
                 break
 
-            min_date += analyticsconstants.ONE_DAY
+            index_time_difference = timedelta(days=1)
+            min_date += index_time_difference
         return bulk_deletes
 
     def __build_bulk_actions_from_query_result(
@@ -295,32 +295,12 @@ class CompositeAggregationQuery(AnalyticsQuery):
             )
         return bulk_actions
 
-    def __process_composite_aggregation_data(
-        self, buckets: list, company_id: str
-    ) -> str:
-        """
-        Processes results from the composite aggregation query, sends data fetched from the result
-        to the appropriate index using a bulk request, and prepares for further processing of
-        composite query results.
-
-        Returns the identifier of the last bucket in the query result.
-        """
-        # building the bulk API actions
-        bulk_actions = self.__build_bulk_actions_from_query_result(buckets, company_id)
-
-        # sending the bulk request to Elasticsearch
-        print(f"Sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}")
-        helpers.bulk(self.elasticsearch, bulk_actions)
-        print(
-            f"Finished sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}"
-        )
-
-    def send_query_and_evaluate_results(self) -> None:
+    def run(self) -> None:
         # will contain all the composite aggregation data
         query_buckets = []
 
         # running the Elasticsearch query
-        query_result = self.__run_query()
+        query_result = self.__query()
 
         # processing and querying additional composite aggregation buckets until there are no more
         # buckets to process.
@@ -337,8 +317,17 @@ class CompositeAggregationQuery(AnalyticsQuery):
             # the companyId will be the same across each hit in a given flow
             company_id = query_result["hits"]["hits"][0]["_source"]["companyId"]
 
-            query_result = self.__run_query()
-        self.__process_composite_aggregation_data(query_buckets, company_id)
+            query_result = self.__query()
+
+        # building the bulk API actions
+        bulk_actions = self.__build_bulk_actions_from_query_result(buckets, company_id)
+
+        # sending the bulk request to Elasticsearch
+        print(f"Sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}")
+        helpers.bulk(self.elasticsearch, bulk_actions)
+        print(
+            f"Finished sending Bulk Request to {analyticsconstants.ANALYTICS_INDEX_PATTERN}"
+        )
 
 
 class ScanQuery(AnalyticsQuery):
@@ -350,7 +339,7 @@ class ScanQuery(AnalyticsQuery):
         super().__init__(query, metric_definition, mappings, args)
         self.__format_query()
 
-    def __run_query(self) -> Any:
+    def __query(self) -> Any:
         """
         Runs the query against the specified Elasticsearch index.
         """
@@ -476,8 +465,8 @@ class ScanQuery(AnalyticsQuery):
             bulk_actions.append(bulk_action)
         return bulk_actions
 
-    def send_query_and_evaluate_results(self) -> None:
-        query_result = self.__run_query()
+    def run(self) -> None:
+        query_result = self.__query()
 
         # building the bulk API actions
         bulk_actions = self.__build_bulk_actions_from_query_result(query_result)
