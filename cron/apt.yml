@@ -1,0 +1,7 @@
+---
+keys:
+  - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key
+repos:
+  - deb https://packages.cloudfoundry.org/debian stable main
+packages:
+  - cf8-cli

@@ -1,0 +1,3 @@
+@hourly echo "Testing cron runner"
+
+@hourly cf run-task cron --command 'echo "Test CF Task"' --name "test-cron-task"

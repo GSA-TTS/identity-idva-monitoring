@@ -1,0 +1,15 @@
+---
+applications:
+  - name: cron
+    no-route: true
+    health-check-type: process
+    memory: 64MB
+    instances: 1
+    buildpacks:
+      - https://github.com/cloudfoundry/apt-buildpack
+      - binary_buildpack
+    command: |
+      ./install.sh
+      ./supercronic crontab
+    services:
+      - idva-cicd-service-account
