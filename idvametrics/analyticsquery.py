@@ -312,8 +312,6 @@ class CompositeAggregationQuery(AnalyticsQuery):
             query_composite = self.query["aggs"]["composite_buckets"]["composite"]
             query_after_key = analyticsutils.get_composite_after_key(query_result)
             query_composite["after"] = query_after_key
-
-            query_result = self.__query()
         return query_buckets
 
     def run(self) -> None:
