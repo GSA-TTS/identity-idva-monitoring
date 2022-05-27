@@ -14,8 +14,7 @@ workflow_response_time = {
             "filter": [{"match_all": {}}],
         }
     },
-    "_source": ["companyId", "flowId"],
-    "size": 1,
+    "size": 0,
     "aggs": {
         "composite_buckets": {
             "aggs": {
