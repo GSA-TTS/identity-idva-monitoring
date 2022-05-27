@@ -3,16 +3,18 @@ Provides utility functions for use in analytics scripting.
 """
 
 import sys
-from datetime import timedelta
-from dateutil import parser
+import datetime
+import dateutil
 import requests
 
 
-def epoch_time(date: str = None, time_delta: timedelta = timedelta(0)) -> int:
+def epoch_time(
+    date: str = None, time_delta: datetime.timedelta = datetime.timedelta(0)
+) -> int:
     """
     Obtains the epoch time of a given date.
     """
-    return int((parser.parse(date) - time_delta).timestamp())
+    return int((dateutil.parser.parse(date) - time_delta).timestamp())
 
 
 def create_bulk_delete_action(index: str, document_id: str) -> dict:
@@ -110,6 +112,7 @@ def get_mappings(flow_id: str, email: str, password: str, base_url: str) -> dict
         "flow_id": flow_id,
         "flow_name": flow["name"],
         "nodes": node_mappings,
+        "company_id": flow["companyId"],
     }
     return ids_names_mapping
 
