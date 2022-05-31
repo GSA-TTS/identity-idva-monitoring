@@ -1,0 +1,38 @@
+---
+name: Deploy Analytics Scripting
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - 'idvametrics/**'
+      - '.github/workflows/deploy-idvametrics.yaml'
+      - '!**.md'  # Ignore all markdown files in the repository
+  release:
+    types: [released]
+
+jobs:
+  deploy:
+    if: github.repository_owner == '18F'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: 18F/identity-idva-cf-setup@v2
+        id: cf-setup
+        with:
+          cf-username: ${{ secrets.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+          cf-org: ${{ secrets.CF_ORG }}
+
+      - name: Deploy Analytics Scripting
+        run: cf push --vars-file vars.yaml
+          --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
+          --var USERNAME=${{ secrets.METRICS_USERNAME }}
+          --var PASSWORD=${{ secrets.METRICS_PASSWORD }}
+          --var FLOW_ID=${{ secrets.FLOW_ID }}
+          --task
+        working-directory: ./idvametrics
