@@ -31,8 +31,8 @@ jobs:
       - name: Deploy Analytics Scripting
         run: cf push --vars-file vars.yaml
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
-          --var USERNAME=${{ secrets.METRICS_USERNAME }}
-          --var PASSWORD=${{ secrets.METRICS_PASSWORD }}
-          --var FLOW_ID=${{ secrets.FLOW_ID }}
+          --var USERNAME=${{ secrets[env.metrics_username] }}
+          --var PASSWORD=${{ secrets[env.metrics_password] }}
+          --var FLOW_ID=${{ secrets[env.flow_id] }}
           --task
         working-directory: ./idvametrics
