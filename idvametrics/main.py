@@ -17,7 +17,12 @@ METRIC_DEFINITIONS = {
         "index_pattern": EVENTS_INDEX_PATTERN,
         "metric": "connector_pass_rate",
         "metric_keys": ["flowId", "interactionId", "id", "tsEms"],
-        "document_keys": ["id", "connectionId", {"property": "outcomeStatus"}],
+        "document_keys": [
+            "id",
+            "connectionId",
+            {"property": "outcomeStatus"},
+            {"property": "outcomeType"},
+        ],
     },
     "connector_response_time": {
         "index_pattern": SK_INDEX_PATTERN,
