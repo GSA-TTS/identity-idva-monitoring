@@ -2,4 +2,4 @@
 
 @hourly cf run-task cron --command 'echo "Test CF Task"' --name "test-cron-task"
 
-*/5 * * * * cf run-task idvametrics --process web
+*/5 * * * * cf run-task idvametrics --process web --name analytics-scripting
