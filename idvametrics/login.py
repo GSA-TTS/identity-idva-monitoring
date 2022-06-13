@@ -12,7 +12,6 @@ def get_login(email: str, password: str, base_url: str, totp: str):
     attempt. If MFA is not required, returns the callback header of an SFA login
     attempt.
     """
-
     login_path = "/v1/customers/login"
     login_data = {"email": email, "password": password}
 
@@ -76,8 +75,10 @@ def mfa_flow(base_url, login_response, otp):
         "id": policy_response["id"],
     }
 
-    mfa_login_path = f"/v1/auth/{company_id}/connections/{connection_id}/\
-                        capabilities/{capability_name}"
+    mfa_login_path = (
+        f"/v1/auth/{company_id}"
+        f"/connections/{connection_id}/capabilities/{capability_name}"
+    )
 
     mfa_login_headers = {
         "interactionId": policy_response["interactionId"],
