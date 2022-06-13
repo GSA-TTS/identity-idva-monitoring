@@ -53,6 +53,7 @@ def get_command_line_arguments():
     cmd_line_parser.add_argument("--username")
     cmd_line_parser.add_argument("--password")
     cmd_line_parser.add_argument("--base_url")
+    cmd_line_parser.add_argument("--totp", default=None)
     arguments = cmd_line_parser.parse_args()
 
     return arguments
@@ -69,6 +70,7 @@ def main() -> None:
         arguments.username,
         arguments.password,
         arguments.base_url,
+        arguments.totp
     )
 
     connector_pass_rate = analyticsquery.ScanQuery(

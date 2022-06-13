@@ -34,6 +34,7 @@ jobs:
           echo "metrics_username=METRICS_USERNAME_$target_env_upper" >> $GITHUB_ENV
           echo "metrics_password=METRICS_PASSWORD_$target_env_upper" >> $GITHUB_ENV
           echo "flow_id=FLOW_ID_$target_env_upper" >> $GITHUB_ENV
+          echo "totp=TOTP_$target_env_upper" >> $GITHUB_ENV
 
       - name: Deploy Analytics Scripting
         run: cf push
@@ -41,5 +42,6 @@ jobs:
           --var USERNAME=${{ secrets[env.metrics_username] }}
           --var PASSWORD=${{ secrets[env.metrics_password] }}
           --var FLOW_ID=${{ secrets[env.flow_id] }}
+          --var TOTP=${{ secrets[env.totp] }}
           --task
         working-directory: ./idvametrics
