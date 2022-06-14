@@ -1,3 +1,4 @@
 opensearch-py==1.1.0
 python-dateutil
 requests
+pyotp

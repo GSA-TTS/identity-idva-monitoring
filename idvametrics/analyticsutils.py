@@ -6,6 +6,7 @@ import sys
 import datetime
 import dateutil
 import requests
+import login
 
 
 def epoch_time(
@@ -73,16 +74,17 @@ def get_composite_after_key(query_result: dict) -> dict:
     return query_result["aggregations"]["composite_buckets"]["after_key"]
 
 
-def get_mappings(flow_id: str, email: str, password: str, base_url: str) -> dict:
+def get_mappings(
+    flow_id: str, email: str, password: str, base_url: str, totp: str
+) -> dict:
     """
     Returns the mappings of flow id to flow name and node id to node names.
     """
-    login_url = f"{base_url}/v1/customers/login"
+    auth_header = login.get_login(email, password, base_url, totp)
 
-    header = get_authorization_header_to_idva_flows(email, password, login_url)
     # pulling out the flow data for a flow of a given flow id
     flow_url = f"{base_url}/v1/flows/{flow_id}"
-    json = requests.get(flow_url, headers=header).json()
+    json = requests.get(flow_url, headers=auth_header).json()
     try:
         flow = json["flowInfo"]
     except KeyError:
