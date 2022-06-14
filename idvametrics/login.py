@@ -14,8 +14,6 @@ def get_login(email: str, password: str, base_url: str, totp: str):
     login_path = "/v1/customers/login"
     login_data = {"email": email, "password": password}
 
-    otp = pyotp.TOTP(totp).now()
-
     login_response = requests.post(base_url + login_path, json=login_data).json()
     access_token = login_response["access_token"]
     callback_header = {"Authorization": f"Bearer {access_token}"}
@@ -23,6 +21,7 @@ def get_login(email: str, password: str, base_url: str, totp: str):
     if not "mfaRequired" in login_response.keys() or not login_response["mfaRequired"]:
         return callback_header
 
+    otp = pyotp.TOTP(totp).now()
     mfa_login_response = mfa_flow(base_url, login_response, otp)
     skcallback_data = mfa_login_response
 
