@@ -33,15 +33,15 @@ jobs:
           target_env_upper=${{ steps.cf-setup.outputs.target-environment-upper }}
           echo "metrics_username=METRICS_USERNAME_$target_env_upper" >> $GITHUB_ENV
           echo "metrics_password=METRICS_PASSWORD_$target_env_upper" >> $GITHUB_ENV
-          echo "flow_id=FLOW_ID_$target_env_upper" >> $GITHUB_ENV
-          echo "totp=TOTP_$target_env_upper" >> $GITHUB_ENV
+          echo "metrics_flow_id=METRICS_FLOW_ID_$target_env_upper" >> $GITHUB_ENV
+          echo "metrics_totp=METRICS_TOTP_$target_env_upper" >> $GITHUB_ENV
 
       - name: Deploy Analytics Scripting
         run: cf push
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
           --var USERNAME=${{ secrets[env.metrics_username] }}
           --var PASSWORD=${{ secrets[env.metrics_password] }}
-          --var FLOW_ID=${{ secrets[env.flow_id] }}
-          --var TOTP=${{ secrets[env.totp] }}
+          --var FLOW_ID=${{ secrets[env.metrics_flow_id] }}
+          --var TOTP=${{ secrets[env.metrics_totp] }}
           --task
         working-directory: ./idvametrics
