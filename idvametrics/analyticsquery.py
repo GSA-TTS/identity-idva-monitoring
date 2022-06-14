@@ -138,7 +138,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
         self,
         bucket: dict,
         max_date: datetime.datetime,
-        min_date: datetime.datetime = None,
+        min_date: datetime.datetime | None = None,
     ) -> dict:
         """
         Returns an Elasticsearch document which will be uploaded to the dev-analytics-* index
