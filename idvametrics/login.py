@@ -1,5 +1,5 @@
 """
-Provides functions for authenticating into an MFA environment.
+Provides functions for logging into a Ping environment.
 """
 
 import requests
@@ -8,9 +8,8 @@ import pyotp
 
 def get_login(email: str, password: str, base_url: str, totp: str):
     """
-    Returns the auth header, which contains an access token, of an MFA login
-    attempt. If MFA is not required, returns the callback header of an SFA login
-    attempt.
+    Returns the auth header, which contains an access token, of an SFA login attempt. If
+    MFA is required, returns the auth head of an MFA login attempt.
     """
     login_path = "/v1/customers/login"
     login_data = {"email": email, "password": password}
