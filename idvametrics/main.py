@@ -10,8 +10,8 @@ import analyticsutils
 import queries
 
 
-EVENTS_INDEX_PATTERN = "eventsoutcome-*"
-SK_INDEX_PATTERN = "skevents-*"
+EVENTS_INDEX_PATTERN = "dev-eventsoutcome-*"
+SK_INDEX_PATTERN = "dev-skevents-*"
 METRIC_DEFINITIONS = {
     "connector_pass_rate": {
         "index_pattern": EVENTS_INDEX_PATTERN,

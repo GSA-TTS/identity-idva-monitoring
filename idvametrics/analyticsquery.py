@@ -27,7 +27,7 @@ class AnalyticsQuery:
             hosts=[{"host": args.host, "port": args.port}],
             timeout=300,
         )
-        self.index_pattern = f'{args.env}-{metric_definition["index_pattern"]}'
+        self.index_pattern = metric_definition["index_pattern"]
         self.analytics_index_prefix = f"{args.env}-analytics"
         self.query = query
         self.date = self.__get_date(args.start_date, args.end_date)
