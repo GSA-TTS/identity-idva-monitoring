@@ -10,6 +10,7 @@ on:
     paths:
       - 'idvametrics/**'
       - '.github/workflows/deploy-idvametrics.yaml'
+      - 'create-network-policies.sh'
       - '!**.md'  # Ignore all markdown files in the repository
   release:
     types: [released]

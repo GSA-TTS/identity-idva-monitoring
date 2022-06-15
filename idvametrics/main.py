@@ -19,16 +19,14 @@ METRIC_DEFINITIONS = {
         "metric_keys": ["flowId", "interactionId", "id", "tsEms"],
         "document_keys": [
             "id",
-            "connectionId",
             {"property": "outcomeStatus"},
-            {"property": "outcomeType"},
         ],
     },
     "connector_response_time": {
         "index_pattern": SK_INDEX_PATTERN,
         "metric": "connector_response_time",
         "metric_keys": ["interactionId", "id", "tsEms"],
-        "document_keys": ["executionTime"],
+        "document_keys": ["executionTime", "id"],
     },
     "interaction_response_time": {
         "index_pattern": SK_INDEX_PATTERN,
@@ -54,6 +52,7 @@ def get_command_line_arguments():
     cmd_line_parser.add_argument("--password")
     cmd_line_parser.add_argument("--base_url")
     cmd_line_parser.add_argument("--totp", default=None)
+    cmd_line_parser.add_argument("--env", default="dev")
     arguments = cmd_line_parser.parse_args()
 
     return arguments
@@ -70,7 +69,7 @@ def main() -> None:
         arguments.username,
         arguments.password,
         arguments.base_url,
-        arguments.totp
+        arguments.totp,
     )
 
     connector_pass_rate = analyticsquery.ScanQuery(
