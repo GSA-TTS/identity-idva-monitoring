@@ -14,7 +14,12 @@ def get_login(email: str, password: str, base_url: str, totp: str):
     login_path = "/v1/customers/login"
     login_data = {"email": email, "password": password}
 
-    login_response = requests.post(base_url + login_path, json=login_data).json()
+    login_response = requests.post(base_url + login_path, json=login_data)
+    if not login_response.ok:
+        print(login_response.json())
+        raise requests.HTTPError(login_response.status_code)
+
+    login_response = login_response.json()
     access_token = login_response["access_token"]
     callback_header = {"Authorization": f"Bearer {access_token}"}
 
@@ -29,9 +34,13 @@ def get_login(email: str, password: str, base_url: str, totp: str):
 
     callback_response = requests.post(
         base_url + callback_path, json=skcallback_data, headers=callback_header
-    ).json()
+    )
 
-    return {"Authorization": f"Bearer {callback_response['access_token']}"}
+    if not callback_response.ok:
+        print(callback_response.json())
+        raise requests.HTTPError(callback_response.status_code)
+
+    return {"Authorization": f"Bearer {callback_response.json()['access_token']}"}
 
 
 def mfa_flow(base_url, login_response, otp):
@@ -108,6 +117,10 @@ def mfa_flow(base_url, login_response, otp):
     # submits the OTP
     mfa_login_response = requests.post(
         base_url + mfa_login_path, json=mfa_login_data, headers=mfa_login_headers
-    ).json()
+    )
 
-    return mfa_login_response
+    if not mfa_login_response.ok:
+        print(mfa_login_response.json())
+        raise requests.HTTPError(mfa_login_response.status_code)
+
+    return mfa_login_response.json()
