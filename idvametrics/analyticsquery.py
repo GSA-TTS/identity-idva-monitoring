@@ -10,8 +10,6 @@ import dateutil
 import opensearchpy
 import analyticsutils
 
-ANALYTICS_INDEX_PREFIX = "dev-analytics"
-ANALYTICS_INDEX_PATTERN = f"{ANALYTICS_INDEX_PREFIX}-*"
 ANALYTICS_TIME_OFFSET = datetime.timedelta(minutes=5)
 DEFAULT_NUM_COMPOSITE_BUCKETS = 10
 
@@ -21,7 +19,7 @@ class AnalyticsQuery:
     The base class for creating objects representing an Elasticsearch query.
 
     Each AnalyticsQuery object is connected to an Elasticsearch server and can upload documents to
-    the dev-analytics-* index pattern.
+    the analytics-* index pattern.
     """
 
     def __init__(self, query, metric_definition, mappings, args):
@@ -29,11 +27,12 @@ class AnalyticsQuery:
             hosts=[{"host": args.host, "port": args.port}],
             timeout=300,
         )
-        self.index_pattern = metric_definition["index_pattern"]
+        self.index_pattern = f'{args.env}-{metric_definition["index_pattern"]}'
+        self.analytics_index_prefix = f"{args.env}-analytics"
         self.query = query
-        self.flow_id = args.flow_id
         self.date = self.__get_date(args.start_date, args.end_date)
         self.metric_definition = {
+            "flow_id": args.flow_id,
             "metric": metric_definition["metric"],
             "metric_keys": metric_definition["metric_keys"],
             "document_keys": metric_definition["document_keys"],
@@ -77,7 +76,7 @@ class AnalyticsQuery:
         tsEms field. If the analytics-* index pattern does not exist, or doesn't contain data for
         the tsEms field, return None.
         """
-        if not self.elasticsearch.indices.get_alias(ANALYTICS_INDEX_PATTERN):
+        if not self.elasticsearch.indices.get_alias(f"{self.analytics_index_prefix}-*"):
             # The analytics-* index pattern doesn't exist.
             return None
 
@@ -87,7 +86,9 @@ class AnalyticsQuery:
                 "bool": {
                     "must": [
                         {
-                            "match_phrase": {"flowId": self.flow_id},
+                            "match_phrase": {
+                                "flowId": self.metric_definition["flow_id"]
+                            },
                         },
                     ],
                 },
@@ -101,7 +102,7 @@ class AnalyticsQuery:
         }
 
         res = self.elasticsearch.search(
-            index=ANALYTICS_INDEX_PATTERN,
+            index=f"{self.analytics_index_prefix}-*",
             body=newest_timestamp_query,
         )
         try:
@@ -149,10 +150,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
             "max_date": max_date,
             "min_date": min_date,
             "companyId": self.mappings["companyId"],
-            "flowId": self.flow_id,
+            "flowId": self.metric_definition["flow_id"],
             "flowName": self.mappings["flow_name"],
             "metric": self.metric_definition["metric"],
-            "metric_key": bucket["key"],
         }
 
         # Adding additional query-specific data to the document.
@@ -162,18 +162,16 @@ class CompositeAggregationQuery(AnalyticsQuery):
         for key in self.metric_definition["metric_keys"]:
             document[key] = bucket["key"][key]
 
-        # Adding connectorId and nodeName to the document, if required.
+        # Adding a nodeName to the document, if required.
         keys = document.keys()
         if "id" in keys:
             connector_id = bucket["connectorId"]["buckets"][0]["key"]
-            document["connectorId"] = connector_id
             node_id = document["id"]
             try:
                 node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
-                title = node["title"]
-                document["nodeName"] = f"{connector_id} {title}"
+                document["nodeName"] = node["title"]
             except IndexError:
-                document["nodeName"] = f"{connector_id}"
+                document["nodeName"] = connector_id
 
         return document
 
@@ -206,7 +204,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
         )
 
         # Requiring a search on a specified flow_id.
-        match_phrase = {"match_phrase": {"flowId": {"query": self.flow_id}}}
+        match_phrase = {
+            "match_phrase": {"flowId": {"query": self.metric_definition["flow_id"]}}
+        }
         # Defining a time range for the search.
         query_range = {
             "range": {
@@ -240,7 +240,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         while min_date < max_date:
             index_date = min_date.strftime("%Y.%m.%d")
-            index = f"{ANALYTICS_INDEX_PREFIX}-{index_date}"
+            index = f"{self.analytics_index_prefix}-{index_date}"
 
             if self.elasticsearch.exists(index, document_id):
                 bulk_deletes.append(
@@ -268,7 +268,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             # The document belongs in the analytics index defined by the max_date.
             max_date = dateutil.parser.parse(bucket["max"]["value_as_string"])
             max_date_str = max_date.strftime("%Y.%m.%d")
-            index_to_update = f"{ANALYTICS_INDEX_PREFIX}-{max_date_str}"
+            index_to_update = f"{self.analytics_index_prefix}-{max_date_str}"
 
             # Creating bulk actions for deleting the document with id document_id from an analytics
             # index in the date range between min_date and max_date, if the document exists. This
@@ -322,9 +322,9 @@ class CompositeAggregationQuery(AnalyticsQuery):
         bulk_actions = self.__build_bulk_actions_from_query_result(query_buckets)
 
         # sending the bulk request to Elasticsearch
-        print(f"Sending Bulk Request to {ANALYTICS_INDEX_PATTERN}")
+        print(f"Sending Bulk Request to {self.analytics_index_prefix}-*")
         opensearchpy.helpers.bulk(self.elasticsearch, bulk_actions)
-        print(f"Finished sending Bulk Request to {ANALYTICS_INDEX_PATTERN}")
+        print(f"Finished sending Bulk Request to {self.analytics_index_prefix}-*")
 
 
 class ScanQuery(AnalyticsQuery):
@@ -363,7 +363,7 @@ class ScanQuery(AnalyticsQuery):
         specific time range.
         """
         # Requiring a search on a specified flow_id.
-        match_flow_id = {"match_phrase": {"flowId": self.flow_id}}
+        match_flow_id = {"match_phrase": {"flowId": self.metric_definition["flow_id"]}}
 
         # defining the date range of the query
         query_range = {
@@ -387,16 +387,6 @@ class ScanQuery(AnalyticsQuery):
             }
             analyticsutils.update_nested_key(self.query, ["query", "bool"], must)
 
-    def __build_metric_key(self, source):
-        """
-        Builds the metric_key field for an Elasticsearch analytics document.
-        """
-        metric_key = {}
-        for key in self.metric_definition["metric_keys"]:
-            metric_key[key] = source[key]
-
-        return metric_key
-
     def __create_analytics_document(self, source) -> dict:
         """
         Returns an Elasticsearch document which will be uploaded to the dev-analytics-* index
@@ -405,12 +395,10 @@ class ScanQuery(AnalyticsQuery):
         document = {
             "companyId": self.mappings["companyId"],
             "doc_count": 1,
-            "connectorId": source["connectorId"],
-            "flowId": self.flow_id,
+            "flowId": self.metric_definition["flow_id"],
             "flowName": self.mappings["flow_name"],
             "max_date": dateutil.parser.parse(source["tsEms"]),
             "metric": self.metric_definition["metric"],
-            "metric_key": self.__build_metric_key(source),
         }
 
         # Adding query specific fields and data to the document.
@@ -421,15 +409,15 @@ class ScanQuery(AnalyticsQuery):
             else:
                 document[document_key] = source[document_key]
 
-        # Creating a nodeName for the document, if needed
+        # Adding a nodeName to the document, if required.
         keys = document.keys()
         if "id" in keys:
             node_id = document["id"]
             try:
                 node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
-                document["nodeName"] = f'{document["connectorId"]} {node["title"]}'
+                document["nodeName"] = node["title"]
             except IndexError:
-                document["nodeName"] = f'{document["connectorId"]}'
+                document["nodeName"] = source["connectorId"]
 
         return document
 
@@ -451,7 +439,7 @@ class ScanQuery(AnalyticsQuery):
             # Determining the appropriate index to upload the document to and creating that index
             # if it does not exist.
             date = dateutil.parser.parse(source["tsEms"]).date().strftime("%Y.%m.%d")
-            index_to_update = f"{ANALYTICS_INDEX_PREFIX}-{date}"
+            index_to_update = f"{self.analytics_index_prefix}-{date}"
             self.create_index(index_to_update)
 
             # Creating the bulk index action for the document and adding it to the list of bulk
@@ -468,6 +456,6 @@ class ScanQuery(AnalyticsQuery):
         # building the bulk API actions
         bulk_actions = self.__build_bulk_actions_from_query_result(query_result)
         # sending the bulk request to Elasticsearch
-        print(f"Sending Scan Query Bulk Request to {ANALYTICS_INDEX_PATTERN}")
+        print(f"Sending Scan Query Bulk Request to {self.analytics_index_prefix}-*")
         opensearchpy.helpers.bulk(self.elasticsearch, bulk_actions)
-        print(f"Finished Scan Query Bulk Request to {ANALYTICS_INDEX_PATTERN}")
+        print(f"Finished Scan Query Bulk Request to {self.analytics_index_prefix}-*")

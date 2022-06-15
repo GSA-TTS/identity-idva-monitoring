@@ -15,4 +15,5 @@ applications:
       --base_url https://idva-api-((ENVIRONMENT_NAME)).app.cloud.gov \
       --username ((USERNAME)) \
       --password $PASSWORD \
-      --totp $TOTP
+      --totp $TOTP \
+      --env ((ENVIRONMENT_NAME))
