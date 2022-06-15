@@ -36,6 +36,11 @@ jobs:
           echo "metrics_flow_id=METRICS_FLOW_ID_$target_env_upper" >> $GITHUB_ENV
           echo "metrics_totp=METRICS_TOTP_$target_env_upper" >> $GITHUB_ENV
 
+      - name: Apply CF Network Policies
+        run: ./create-network-policies.sh
+        env:
+          ENVIRONMENT_NAME: ${{ steps.cf-setup.outputs.target-environment }}
+
       - name: Deploy Analytics Scripting
         run: cf push
           --var ENVIRONMENT_NAME=${{ steps.cf-setup.outputs.target-environment }}
