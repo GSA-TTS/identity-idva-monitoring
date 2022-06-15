@@ -149,7 +149,7 @@ class CompositeAggregationQuery(AnalyticsQuery):
             "doc_count": bucket["doc_count"],
             "max_date": max_date,
             "min_date": min_date,
-            "companyId": self.mappings["companyId"],
+            "companyId": self.mappings["company_id"],
             "flowId": self.metric_definition["flow_id"],
             "flowName": self.mappings["flow_name"],
             "metric": self.metric_definition["metric"],
@@ -393,7 +393,7 @@ class ScanQuery(AnalyticsQuery):
         pattern.
         """
         document = {
-            "companyId": self.mappings["companyId"],
+            "companyId": self.mappings["company_id"],
             "doc_count": 1,
             "flowId": self.metric_definition["flow_id"],
             "flowName": self.mappings["flow_name"],
