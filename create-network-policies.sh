@@ -19,6 +19,9 @@ closed="$restricted-closed"
 
 cf target -s "$restricted"
 
+# Source = Idvametrics
+cf add-network-policy idvametrics es-proxy --protocol tcp --port 8080 -s "$restricted"
+
 # Source = Kibana
 cf add-network-policy kibana es-proxy                  --protocol tcp --port 61443 -s "$restricted"
 
@@ -48,6 +51,3 @@ cf target -s "$public"
 # Source = Alertmanager
 cf add-network-policy alertmanager alertmanager        --protocol tcp --port 9094 -s "$public"
 cf add-network-policy alertmanager alertmanager        --protocol udp --port 9094 -s "$public"
-
-# Source = Idvametrics
-cf add-network-policy idvametrics es-proxy --protocol tcp --port 8080 -s "$restricted"
