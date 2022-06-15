@@ -2,7 +2,6 @@
 Provides functions for logging into a Ping environment.
 """
 
-import sys
 import requests
 import pyotp
 
@@ -16,9 +15,9 @@ def get_login(email: str, password: str, base_url: str, totp: str):
     login_data = {"email": email, "password": password}
 
     login_response = requests.post(base_url + login_path, json=login_data)
-    if login_response.status_code != 200:
+    if not login_response.ok:
         print(login_response.json())
-        sys.exit(login_response.status_code)
+        raise requests.HTTPError(login_response.status_code)
 
     login_response = login_response.json()
     access_token = login_response["access_token"]
@@ -37,9 +36,9 @@ def get_login(email: str, password: str, base_url: str, totp: str):
         base_url + callback_path, json=skcallback_data, headers=callback_header
     )
 
-    if callback_response.status_code != 200:
+    if not callback_response.ok:
         print(callback_response.json())
-        sys.exit(callback_response.status_code)
+        raise requests.HTTPError(callback_response.status_code)
 
     return {"Authorization": f"Bearer {callback_response.json()['access_token']}"}
 
@@ -120,8 +119,8 @@ def mfa_flow(base_url, login_response, otp):
         base_url + mfa_login_path, json=mfa_login_data, headers=mfa_login_headers
     )
 
-    if mfa_login_response.status_code != 200:
+    if not mfa_login_response.ok:
         print(mfa_login_response.json())
-        sys.exit(mfa_login_response.status_code)
+        raise requests.HTTPError(mfa_login_response.status_code)
 
     return mfa_login_response.json()
