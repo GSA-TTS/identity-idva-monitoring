@@ -4,7 +4,7 @@ Provides utility functions for use in analytics scripting.
 
 import sys
 import datetime
-import dateutil
+import dateutil.parser
 import requests
 import login
 
