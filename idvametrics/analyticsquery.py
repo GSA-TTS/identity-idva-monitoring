@@ -30,7 +30,6 @@ class AnalyticsQuery:
         self.index_pattern = metric_definition["index_pattern"]
         self.analytics_index_prefix = f"{args.env}-analytics"
         self.query = query
-        self.date = self.__get_date(args.start_date, args.end_date)
         self.metric_definition = {
             "flow_id": args.flow_id,
             "metric": metric_definition["metric"],
@@ -38,6 +37,7 @@ class AnalyticsQuery:
             "document_keys": metric_definition["document_keys"],
         }
         self.mappings = mappings
+        self.date = self.__get_date(args.start_date, args.end_date)
 
     def __get_date(self, start_date: str, end_date: str):
         """
