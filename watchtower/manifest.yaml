@@ -16,4 +16,3 @@ applications:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
       CF_USER: ((CF_USER))
       CF_PASS: ((CF_PASS))
-      CF_API: https://api.fr.cloud.gov

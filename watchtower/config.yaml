@@ -1,4 +1,8 @@
 ---
+global:
+  port: ${PORT}
+  cloud_controller_url: https://api.fr.cloud.gov
+  refresh_interval: 5m
 apps:
   enabled: true
   resources:
@@ -49,7 +53,7 @@ apps:
         - idva-api-${ENVIRONMENT_NAME}.app.cloud.gov
         - idva-${ENVIRONMENT_NAME}.app.cloud.gov
         - idva-keycloak-${ENVIRONMENT_NAME}.app.cloud.gov
-        - idva sdk-${ENVIRONMENT_NAME}.app.cloud.gov
+        - idva-sdk-${ENVIRONMENT_NAME}.app.cloud.gov
         - idva-portal-${ENVIRONMENT_NAME}.app.cloud.gov
     - name: kong-egress
       routes:
@@ -123,9 +127,11 @@ apps:
 spaces:
   enabled: true
   resources:
-    - name: dev
-      allow_ssh: true
-    - name: test
-      allow_ssh: true
-    - name: prod
+    - name: ${ENVIRONMENT_NAME}
       allow_ssh: false
+    - name: ${ENVIRONMENT_NAME}-public
+      allow_ssh: false
+    - name: ${ENVIRONMENT_NAME}-closed
+      allow_ssh: false
+    - name: ${ENVIRONMENT_NAME}-warpgate
+      allow_ssh: true
