@@ -15,6 +15,12 @@ apps:
     - name: elasticsearch-metrics
       routes:
         - identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal
+    - name: eph-es
+      optional: true
+      routes:
+        - idva-eph-es-${ENVIRONMENT_NAME}.apps.internal
+    - name: eph-kibana
+      optional: true
     - name: es-proxy
       routes:
         - identity-idva-es-proxy-${ENVIRONMENT_NAME}.apps.internal
