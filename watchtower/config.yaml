@@ -11,21 +11,31 @@ apps:
     - name: cortex
       routes:
         - identity-idva-monitoring-cortex-${ENVIRONMENT_NAME}.apps.internal
+    - name: cron
     - name: elasticsearch-metrics
       routes:
         - identity-idva-metrics-elasticsearch-${ENVIRONMENT_NAME}.apps.internal
+    - name: eph-es
+      optional: true
+      routes:
+        - idva-eph-es-${ENVIRONMENT_NAME}.apps.internal
+    - name: eph-kibana
+      optional: true
     - name: es-proxy
       routes:
         - identity-idva-es-proxy-${ENVIRONMENT_NAME}.apps.internal
     - name: flow-client
       optional: true
       routes:
-        - identity-idva-keycloak-${ENVIRONMENT_NAME}.apps.internal
+        - idva-client-${ENVIRONMENT_NAME}.app.cloud.gov
     - name: gpo
       optional: true
+      routes:
+        - identity-idva-gpo-${ENVIRONMENT_NAME}.apps.internal
     - name: grafana
       routes:
         - identity-idva-monitoring-grafana-${ENVIRONMENT_NAME}.apps.internal
+    - name: idvametrics
     - name: keycloak
       optional: true
       routes:
@@ -37,6 +47,16 @@ apps:
       routes:
         - identity-idva-kong-${ENVIRONMENT_NAME}.apps.internal
         - idva-api-${ENVIRONMENT_NAME}.app.cloud.gov
+        - idva-${ENVIRONMENT_NAME}.app.cloud.gov
+        - idva-keycloak-${ENVIRONMENT_NAME}.app.cloud.gov
+        - idva sdk-${ENVIRONMENT_NAME}.app.cloud.gov
+        - idva-portal-${ENVIRONMENT_NAME}.app.cloud.gov
+    - name: kong-egress
+      routes:
+        - idva-kong-egress-${ENVIRONMENT_NAME}.apps.internal
+    - name: kong-internal
+      routes:
+        - idva-kong-internal-${ENVIRONMENT_NAME}.apps.internal
     - name: locust
       optional: true
     - name: outbound-proxy
@@ -77,10 +97,10 @@ apps:
     - name: sk-openid
     - name: sk-portal
       routes:
-        - idva-portal-${ENVIRONMENT_NAME}.app.cloud.gov
+        - idva-sk-portal-${ENVIRONMENT_NAME}.apps.internal
     - name: sk-sdk
       routes:
-        - idva-sdk-${ENVIRONMENT_NAME}.app.cloud.gov
+        - idva-sk-sdk-${ENVIRONMENT_NAME}.apps.internal
     - name: sk-smtp
     - name: sk-socure
     - name: sk-totp
@@ -93,9 +113,9 @@ apps:
       routes:
         - identity-idva-static-assets-${ENVIRONMENT_NAME}.app.cloud.gov
     - name: usps
+      optional: true
       routes:
         - identity-idva-usps-${ENVIRONMENT_NAME}.apps.internal
-      optional: true
     - name: watchtower
       routes:
         - identity-idva-monitoring-watchtower-${ENVIRONMENT_NAME}.apps.internal
