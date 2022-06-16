@@ -6,7 +6,7 @@ against a server and uploading to an index.
 import datetime
 import hashlib
 import typing
-import dateutil
+import dateutil.parser
 import opensearchpy
 import analyticsutils
 
