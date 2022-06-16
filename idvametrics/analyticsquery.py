@@ -417,7 +417,9 @@ class ScanQuery(AnalyticsQuery):
                 node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
                 document["nodeName"] = node["title"]
             except IndexError:
-                document["nodeName"] = source["connectorId"]
+                document["nodeName"] = (
+                    source["connectorId"] if "connectorId" in source else ""
+                )
 
         return document
 
