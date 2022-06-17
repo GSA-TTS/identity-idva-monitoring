@@ -7,7 +7,16 @@ route:
   group_interval: 5m
   repeat_interval: 1h
   receiver: 'web.hook'
+
+  routes:
+  # null route ssh space config in dev
+  - receiver: "null"
+    matchers:
+    - alertname = "SSH Misconfiguration Detected"
+    - env = "dev"
+
 receivers:
+  - name: "null"
   - name: 'web.hook'
     slack_configs:
       - channel: '#idva-alerts'
