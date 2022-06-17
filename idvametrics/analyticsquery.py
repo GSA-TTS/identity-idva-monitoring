@@ -300,18 +300,24 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         # querying additional composite aggregation buckets until there are no more
         # buckets to process.
-        while (
-            query_result := self.__query()
-            and len(
-                buckets := query_result["aggregations"]["composite_buckets"]["buckets"]
-            )
-            > 0
-        ):
+        query_result = self.__query()
+        buckets = (
+            query_result["aggregations"]["composite_buckets"]["buckets"]
+            if query_result
+            else None
+        )
+        while query_result and len(buckets) > 0:
             query_buckets.extend(buckets)
 
             query_composite = self.query["aggs"]["composite_buckets"]["composite"]
             query_after_key = analyticsutils.get_composite_after_key(query_result)
             query_composite["after"] = query_after_key
+            query_result = self.__query()
+            buckets = (
+                query_result["aggregations"]["composite_buckets"]["buckets"]
+                if query_result
+                else None
+            )
         return query_buckets
 
     def run(self) -> None:
@@ -322,9 +328,15 @@ class CompositeAggregationQuery(AnalyticsQuery):
         bulk_actions = self.__build_bulk_actions_from_query_result(query_buckets)
 
         # sending the bulk request to Elasticsearch
-        print(f"Sending Bulk Request to {self.analytics_index_prefix}-*")
+        print(
+            f"Sending {self.metric_definition['metric']} Composite Query Bulk Request "
+            f"to {self.analytics_index_prefix}-*"
+        )
         opensearchpy.helpers.bulk(self.elasticsearch, bulk_actions)
-        print(f"Finished sending Bulk Request to {self.analytics_index_prefix}-*")
+        print(
+            f"Finished sending {self.metric_definition['metric']} Composite Query Bulk Request "
+            f"to {self.analytics_index_prefix}-*"
+        )
 
 
 class ScanQuery(AnalyticsQuery):
@@ -340,9 +352,7 @@ class ScanQuery(AnalyticsQuery):
         """
         Runs the query against the specified Elasticsearch index.
         """
-        return opensearchpy.helpers.scan(
-            self.elasticsearch, index=self.index_pattern, query=self.query
-        )
+        return self.elasticsearch.search(index=self.index_pattern, body=self.query, scroll='5m')
 
     def __create_document_id(self, hit):
         """
@@ -353,7 +363,8 @@ class ScanQuery(AnalyticsQuery):
             try:
                 document_id += f"-{hit[key]}"
             except KeyError:
-                document_id += f"-{hit['_source'][key]}"
+                if key in hit["_source"]:
+                    document_id += f"-{hit['_source'][key]}"
 
         return document_id
 
@@ -407,7 +418,9 @@ class ScanQuery(AnalyticsQuery):
                 doc_property = document_key["property"]
                 document[doc_property] = source["properties"][doc_property]["value"]
             else:
-                document[document_key] = source[document_key]
+                document[document_key] = (
+                    source[document_key] if document_key in source else ""
+                )
 
         # Adding a nodeName to the document, if required.
         keys = document.keys()
@@ -417,37 +430,47 @@ class ScanQuery(AnalyticsQuery):
                 node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
                 document["nodeName"] = node["title"]
             except IndexError:
-                document["nodeName"] = source["connectorId"]
+                document["nodeName"] = (
+                    source["connectorId"] if "connectorId" in source else ""
+                )
 
         return document
 
-    def __build_bulk_actions_from_query_result(self, query_result: list) -> list:
+    def __build_bulk_actions_from_query_result(self, query_result: dict) -> list:
         """
         From a query result, build a list of bulk API actions containing analytics documents to be
         uploaded to the anlaytics index.
         """
+        scroll_id = query_result["_scroll_id"]
+        hits = query_result["hits"]["hits"]
         bulk_actions = []
-        # Scans return all hits that satisfy the query conditions
-        for hit in query_result:
-            source = hit["_source"]
-            # Creating the document id using sha256 hashing
-            document_id = self.__create_document_id(hit).encode()
-            document_id = hashlib.sha256(document_id).hexdigest()
+        while len(hits):
+            # Scans return all hits that satisfy the query conditions
+            for hit in hits:
+                source = hit["_source"]
+                # Creating the document id using sha256 hashing
+                document_id = self.__create_document_id(hit).encode()
+                document_id = hashlib.sha256(document_id).hexdigest()
 
-            document = self.__create_analytics_document(source)
+                document = self.__create_analytics_document(source)
 
-            # Determining the appropriate index to upload the document to and creating that index
-            # if it does not exist.
-            date = dateutil.parser.parse(source["tsEms"]).date().strftime("%Y.%m.%d")
-            index_to_update = f"{self.analytics_index_prefix}-{date}"
-            self.create_index(index_to_update)
+                # Determining the appropriate index to upload the document to and creating that
+                # index if it does not exist.
+                date = (
+                    dateutil.parser.parse(source["tsEms"]).date().strftime("%Y.%m.%d")
+                )
+                index_to_update = f"{self.analytics_index_prefix}-{date}"
+                self.create_index(index_to_update)
 
-            # Creating the bulk index action for the document and adding it to the list of bulk
-            # actions that are sent.
-            bulk_action = analyticsutils.create_bulk_index_action(
-                index_to_update, document_id, document
-            )
-            bulk_actions.append(bulk_action)
+                # Creating the bulk index action for the document and adding it to the list of bulk
+                # actions that are sent.
+                bulk_action = analyticsutils.create_bulk_index_action(
+                    index_to_update, document_id, document
+                )
+                bulk_actions.append(bulk_action)
+            query_result = self.elasticsearch.scroll(scroll_id=scroll_id, scroll = '1m')
+            scroll_id = query_result["_scroll_id"]
+            hits = query_result["hits"]["hits"]
         return bulk_actions
 
     def run(self) -> None:
@@ -455,7 +478,14 @@ class ScanQuery(AnalyticsQuery):
 
         # building the bulk API actions
         bulk_actions = self.__build_bulk_actions_from_query_result(query_result)
+
         # sending the bulk request to Elasticsearch
-        print(f"Sending Scan Query Bulk Request to {self.analytics_index_prefix}-*")
+        print(
+            f"Sending {self.metric_definition['metric']} Scan Query "
+            f"Bulk Request to {self.analytics_index_prefix}-*"
+        )
         opensearchpy.helpers.bulk(self.elasticsearch, bulk_actions)
-        print(f"Finished Scan Query Bulk Request to {self.analytics_index_prefix}-*")
+        print(
+            f"Finished {self.metric_definition['metric']} Scan Query "
+            f"Bulk Request to {self.analytics_index_prefix}-*"
+        )

@@ -1,6 +1,7 @@
 ---
 applications:
 - name: idvametrics
+  memory: 256MB
   buildpacks:
     - python_buildpack
   no-route: true
