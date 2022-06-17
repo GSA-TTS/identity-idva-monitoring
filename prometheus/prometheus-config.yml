@@ -3,6 +3,7 @@ global:
   # The labels to add to any time series or alerts when communicating with
   # external systems (federation, remote storage, Alertmanager).
   external_labels:
+    env: ${ENVIRONMENT_NAME}
     cluster: idva-prometheus
     __replica__: replica-${CF_INSTANCE_INDEX}
 
