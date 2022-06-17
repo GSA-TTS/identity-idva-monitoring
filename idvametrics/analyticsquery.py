@@ -329,12 +329,12 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         # sending the bulk request to Elasticsearch
         print(
-            f"Sending {self.metric_definition['metric']} Bulk Request"
+            f"Sending {self.metric_definition['metric']} Composite Query Bulk Request"
             f"to {self.analytics_index_prefix}-*"
         )
         opensearchpy.helpers.bulk(self.elasticsearch, bulk_actions)
         print(
-            f"Finished sending {self.metric_definition['metric']} Bulk Request"
+            f"Finished sending {self.metric_definition['metric']} Composite Query Bulk Request"
             f"to {self.analytics_index_prefix}-*"
         )
 
