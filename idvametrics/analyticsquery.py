@@ -329,12 +329,12 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         # sending the bulk request to Elasticsearch
         print(
-            f"Sending {self.metric_definition['metric']} Composite Query Bulk Request"
+            f"Sending {self.metric_definition['metric']} Composite Query Bulk Request "
             f"to {self.analytics_index_prefix}-*"
         )
         opensearchpy.helpers.bulk(self.elasticsearch, bulk_actions)
         print(
-            f"Finished sending {self.metric_definition['metric']} Composite Query Bulk Request"
+            f"Finished sending {self.metric_definition['metric']} Composite Query Bulk Request "
             f"to {self.analytics_index_prefix}-*"
         )
 
@@ -352,7 +352,7 @@ class ScanQuery(AnalyticsQuery):
         """
         Runs the query against the specified Elasticsearch index.
         """
-        return self.elasticsearch.search(index=self.index_pattern, body=self.query)
+        return self.elasticsearch.search(index=self.index_pattern, body=self.query, scroll='5m')
 
     def __create_document_id(self, hit):
         """
@@ -468,7 +468,7 @@ class ScanQuery(AnalyticsQuery):
                     index_to_update, document_id, document
                 )
                 bulk_actions.append(bulk_action)
-            query_result = self.elasticsearch.scroll(scroll_id=scroll_id)
+            query_result = self.elasticsearch.scroll(scroll_id=scroll_id, scroll = '1m')
             scroll_id = query_result["_scroll_id"]
             hits = query_result["hits"]["hits"]
         return bulk_actions
@@ -481,11 +481,11 @@ class ScanQuery(AnalyticsQuery):
 
         # sending the bulk request to Elasticsearch
         print(
-            f"Sending {self.metric_definition['metric']} Scan Query"
+            f"Sending {self.metric_definition['metric']} Scan Query "
             f"Bulk Request to {self.analytics_index_prefix}-*"
         )
         opensearchpy.helpers.bulk(self.elasticsearch, bulk_actions)
         print(
-            f"Finished {self.metric_definition['metric']} Scan Query"
+            f"Finished {self.metric_definition['metric']} Scan Query "
             f"Bulk Request to {self.analytics_index_prefix}-*"
         )
