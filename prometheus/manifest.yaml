@@ -13,6 +13,6 @@ applications:
       ./prometheus \
         --web.listen-address="0.0.0.0:$PORT" \
         --storage.tsdb.retention.size="950MB" \
-        --web.external-url https://identity-idva-monitoring-prometheus-"$ENVIRONMENT_NAME".apps.internal/
+        --web.external-url /prometheus/
     env:
       ENVIRONMENT_NAME: ((ENVIRONMENT_NAME))
