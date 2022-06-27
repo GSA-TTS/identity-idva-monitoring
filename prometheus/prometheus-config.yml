@@ -19,6 +19,7 @@ alerting:
     - scheme: https
       static_configs:
         - targets: ['identity-idva-monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal:61443']
+      path_prefix: '/alertmanager/'
 
 # Load rules once and periodically evaluate them according to the
 # global 'evaluation_interval'.
@@ -74,6 +75,7 @@ scrape_configs:
     scheme: https
     static_configs:
       - targets: ['identity-idva-monitoring-alertmanager-${ENVIRONMENT_NAME}.apps.internal:61443']
+    metrics_path: '/alertmanager/metrics'
 
   - job_name: 'cortex'
     scheme: https
