@@ -19,6 +19,11 @@ server.host: "0.0.0.0"
 
 
 # The URLs of the Elasticsearch instances to use for all your queries.
+elasticsearch.hosts:
+  - "https://identity-idva-es-proxy-${ENVIRONMENT_NAME}.apps.internal:61443"
 
 # Optional setting that enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
+elasticsearch.ssl.certificateAuthorities:
+  - "/etc/cf-system-certificates/trusted-ca-1.crt"
+  - "/etc/cf-system-certificates/trusted-ca-2.crt"
