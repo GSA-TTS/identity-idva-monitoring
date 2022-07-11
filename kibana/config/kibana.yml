@@ -1,3 +1,4 @@
+---
 server.port: ${PORT}
 server.host: "0.0.0.0"
 
@@ -5,18 +6,13 @@ server.host: "0.0.0.0"
 # Use the `server.rewriteBasePath` setting to tell Kibana if it should remove the basePath
 # from requests it receives, and to prevent a deprecation warning at startup.
 # This setting cannot end in a slash.
-#server.basePath: ""
+server.basePath: "/kibana"
 
 # Specifies whether Kibana should rewrite requests that are prefixed with
 # `server.basePath` or require that they are rewritten by your reverse proxy.
 # This setting was effectively always `false` before Kibana 6.3 and will
 # default to `true` starting in Kibana 7.0.
-#server.rewriteBasePath: false
-
-# Specifies the public URL at which Kibana is available for end users. If
-# `server.basePath` is configured this URL should end with the same basePath.
-#server.publicBaseUrl: ""
-
+server.rewriteBasePath: true
 
 # The URLs of the Elasticsearch instances to use for all your queries.
 elasticsearch.hosts:
