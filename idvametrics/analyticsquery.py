@@ -191,6 +191,18 @@ class CompositeAggregationQuery(AnalyticsQuery):
             self.query, ["aggs", "composite_buckets", "composite"], size
         )
 
+        # Requiring a max and min aggregation for the timestamp.
+        analyticsutils.update_nested_key(
+            self.query,
+            ["aggs", "composite_buckets", "aggs", "max"],
+            {"max": {"field": "tsEms"}},
+        )
+        analyticsutils.update_nested_key(
+            self.query,
+            ["aggs", "composite_buckets", "aggs", "min"],
+            {"min": {"field": "tsEms"}},
+        )
+
         # Requiring a search on a specified flow_id.
         match_phrase = {
             "match_phrase": {"flowId": {"query": self.metric_definition["flow_id"]}}
