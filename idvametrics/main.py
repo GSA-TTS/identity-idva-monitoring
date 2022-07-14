@@ -34,6 +34,12 @@ METRIC_DEFINITIONS = {
         "metric_keys": ["interactionId"],
         "document_keys": ["sessionLength"],
     },
+    "drop_off": {
+        "index_pattern": EVENTS_INDEX_PATTERN,
+        "metric": "drop_off",
+        "metric_keys": ["interactionId"],
+        "document_keys": [],
+    },
 }
 
 

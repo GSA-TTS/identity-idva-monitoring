@@ -191,18 +191,6 @@ class CompositeAggregationQuery(AnalyticsQuery):
             self.query, ["aggs", "composite_buckets", "composite"], size
         )
 
-        # Requiring a max and min aggregation for the timestamp.
-        analyticsutils.update_nested_key(
-            self.query,
-            ["aggs", "composite_buckets", "aggs", "max"],
-            {"max": {"field": "tsEms"}},
-        )
-        analyticsutils.update_nested_key(
-            self.query,
-            ["aggs", "composite_buckets", "aggs", "min"],
-            {"min": {"field": "tsEms"}},
-        )
-
         # Requiring a search on a specified flow_id.
         match_phrase = {
             "match_phrase": {"flowId": {"query": self.metric_definition["flow_id"]}}
@@ -352,7 +340,9 @@ class ScanQuery(AnalyticsQuery):
         """
         Runs the query against the specified Elasticsearch index.
         """
-        return self.elasticsearch.search(index=self.index_pattern, body=self.query, scroll='5m')
+        return self.elasticsearch.search(
+            index=self.index_pattern, body=self.query, scroll="5m"
+        )
 
     def __create_document_id(self, hit):
         """
@@ -468,7 +458,7 @@ class ScanQuery(AnalyticsQuery):
                     index_to_update, document_id, document
                 )
                 bulk_actions.append(bulk_action)
-            query_result = self.elasticsearch.scroll(scroll_id=scroll_id, scroll = '1m')
+            query_result = self.elasticsearch.scroll(scroll_id=scroll_id, scroll="1m")
             scroll_id = query_result["_scroll_id"]
             hits = query_result["hits"]["hits"]
         return bulk_actions
