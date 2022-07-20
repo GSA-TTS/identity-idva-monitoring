@@ -26,3 +26,25 @@ with the `--start_date` and `--end_date` command line options. These options ass
 ambiguous integer date format, that the month is provided first followed by day of month and then
 year last. If date but no time is provided, the time is assumed to be midnight. The start date
 defaults to 5 minutes prior to the current time while the end date defaults to the current time.
+
+## Analytics Conventions
+
+For the purpose of consistency and maintainability, there must exist an established standard
+for the placement of analytics connectors within a flow as well as node names and descriptions for
+all nodes in a flow.
+
+### Analytics Connectors
+
+A stage in a flow refers to the type of identity verification performed while a step is
+an attribute provider's product for the stage. Analytics connectors should be placed at
+the end of each step to record the result (success or failure) of the verification at
+that step. Each analytics connector has an Outcome Type field which records the attribute
+provide and stage of the flow. They should also record the Outcome Status, which is
+success or failure as defined above. The analytics connectors should not be used for
+another purpose.
+
+### Naming Conventions
+
+All nodes should have a node title as well as a node description. The node title should
+be written in `Title Case` while the node description should be written in the format
+`stage:step` (ex: docv:attributeprovider1).
