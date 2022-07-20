@@ -162,16 +162,17 @@ class CompositeAggregationQuery(AnalyticsQuery):
         for key in self.metric_definition["metric_keys"]:
             document[key] = bucket["key"][key]
 
-        # Adding a nodeName to the document, if required.
-        keys = document.keys()
-        if "id" in keys:
-            connector_id = bucket["connectorId"]["buckets"][0]["key"]
-            node_id = document["id"]
+        for key in self.metric_definition["top_hit_keys"]:
+            document[key] = bucket["top_hits"]["hits"]["hits"][0]["_source"][key]
+        
+        if "id" in document:
             try:
-                node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
+                node = [e for e in self.mappings["nodes"] if e["id"] == document["id"]][0]
                 document["nodeName"] = node["title"]
+                document["nodeDescription"] = node["description"]
             except IndexError:
-                document["nodeName"] = connector_id
+                document["nodeName"] = None
+                document["nodeDescription"] = None
 
         return document
 
@@ -433,7 +434,7 @@ class ScanQuery(AnalyticsQuery):
                 document["nodeName"] = node["title"]
             except IndexError:
                 document["nodeName"] = (
-                    source["connectorId"] if "connectorId" in source else ""
+                    source["connectorId"] if "connectorId" in source else None
                 )
 
         return document

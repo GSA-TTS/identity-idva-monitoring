@@ -101,13 +101,21 @@ def get_mappings(
             node_title = node["data"]["properties"]["nodeTitle"]["value"]
         except KeyError:
             # the node title has not yet been defined
-            continue
+            node_title = None
+
+        try:
+            # the node description is defined
+            node_description = node['data']['properties']['nodeDescription']
+        except KeyError:
+            # the node description has not yet been defined
+            node_description = None
 
         # Only add the node id to title mapping if the title is defined for the node
         node_mappings.append(
             {
                 "id": node["data"]["id"],
                 "title": node_title,
+                "description": node_description
             }
         )
     ids_names_mapping = {
