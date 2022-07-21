@@ -52,39 +52,20 @@ connector_pass_rate = {
 # Obtains the last timestamp for each interactionId, allowing for the determination
 # of where the user dropped off in the flow.
 drop_off = {
-  "query": {
-    "bool": {
-      "must": []
-    }
-  },
-  "size": 0,
-  "aggs": {
-    "composite_buckets": {
-      "aggs": {
-        "top hits": {
-          "top_hits": {
-            "size": 1,
-            "sort": [
-              {
-                "tsEms": {
-                  "order": "desc"
+    "query": {"bool": {"must": []}},
+    "size": 0,
+    "aggs": {
+        "composite_buckets": {
+            "aggs": {
+                "top hits": {
+                    "top_hits": {"size": 1, "sort": [{"tsEms": {"order": "desc"}}]}
                 }
-              }
-            ]
-          }
+            },
+            "composite": {
+                "sources": [
+                    {"interactionId": {"terms": {"field": "interactionId.keyword"}}}
+                ]
+            },
         }
-      },
-      "composite": {
-        "sources": [
-          {
-            "interactionId": {
-              "terms": {
-                "field": "interactionId.keyword"
-              }
-            }
-          }
-        ]
-      }
-    }
-  }
+    },
 }

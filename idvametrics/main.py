@@ -27,7 +27,7 @@ METRIC_DEFINITIONS = {
         "metric": "connector_response_time",
         "metric_keys": ["interactionId", "id", "tsEms"],
         "document_keys": ["executionTime", "id"],
-        "top_hit_keys": []
+        "top_hit_keys": [],
     },
     "interaction_response_time": {
         "index_pattern": SK_INDEX_PATTERN,
@@ -40,7 +40,7 @@ METRIC_DEFINITIONS = {
         "metric": "drop_off",
         "metric_keys": ["interactionId"],
         "document_keys": [],
-        "top_hit_keys": ["id"]
+        "top_hit_keys": ["id"],
     },
 }
 
@@ -103,6 +103,11 @@ def main() -> None:
         arguments,
     )
     workflow_response_time.run()
+
+    drop_off = analyticsquery.CompositeAggregationQuery(
+        queries.drop_off, METRIC_DEFINITIONS["drop_off"], mappings, arguments
+    )
+    drop_off.run()
 
 
 if __name__ == "__main__":

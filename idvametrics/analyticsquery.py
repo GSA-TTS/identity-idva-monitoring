@@ -164,10 +164,12 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         for key in self.metric_definition["top_hit_keys"]:
             document[key] = bucket["top_hits"]["hits"]["hits"][0]["_source"][key]
-        
+
         if "id" in document:
             try:
-                node = [e for e in self.mappings["nodes"] if e["id"] == document["id"]][0]
+                node = [e for e in self.mappings["nodes"] if e["id"] == document["id"]][
+                    0
+                ]
                 document["nodeName"] = node["title"]
                 document["nodeDescription"] = node["description"]
             except IndexError:

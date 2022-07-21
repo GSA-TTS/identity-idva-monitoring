@@ -105,7 +105,7 @@ def get_mappings(
 
         try:
             # the node description is defined
-            node_description = node['data']['properties']['nodeDescription']
+            node_description = node["data"]["properties"]["nodeDescription"]
         except KeyError:
             # the node description has not yet been defined
             node_description = None
@@ -115,7 +115,7 @@ def get_mappings(
             {
                 "id": node["data"]["id"],
                 "title": node_title,
-                "description": node_description
+                "description": node_description,
             }
         )
     ids_names_mapping = {
