@@ -43,8 +43,9 @@ provide and stage of the flow. They should also record the Outcome Status, which
 success or failure as defined above. The analytics connectors should not be used for
 another purpose.
 
-### Naming Conventions
+### Nodes
 
-All nodes should have a node title as well as a node description. The node title should
-be written in `Title Case` while the node description should be written in the format
-`stage:step` (ex: docv:attributeprovider1).
+Each node in a flow should have a node title and a node description. The node title should be
+written in `Title Case` and should provide information on the purpose of the node. The node
+description should be written in the format `stage:step` (ex: docv:attributeprovider1),
+identifying the location in the flow of the node.
