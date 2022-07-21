@@ -27,7 +27,7 @@ METRIC_DEFINITIONS = {
         "metric": "connector_response_time",
         "metric_keys": ["interactionId", "id", "tsEms"],
         "document_keys": ["executionTime", "id"],
-        "top_hit_keys": [],
+        "top_hit_fields": [],
     },
     "interaction_response_time": {
         "index_pattern": SK_INDEX_PATTERN,
@@ -40,7 +40,7 @@ METRIC_DEFINITIONS = {
         "metric": "drop_off",
         "metric_keys": ["interactionId"],
         "document_keys": [],
-        "top_hit_keys": ["id"],
+        "top_hit_fields": ["id"],
     },
 }
 

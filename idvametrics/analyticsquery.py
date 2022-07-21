@@ -162,8 +162,8 @@ class CompositeAggregationQuery(AnalyticsQuery):
         for key in self.metric_definition["metric_keys"]:
             document[key] = bucket["key"][key]
 
-        for key in self.metric_definition["top_hit_keys"]:
-            document[key] = bucket["top_hits"]["hits"]["hits"][0]["_source"][key]
+        for field in self.metric_definition["top_hit_fields"]:
+            document[field] = bucket["top_hits"]["hits"]["hits"][0]["_source"][field]
 
         if "id" in document:
             try:

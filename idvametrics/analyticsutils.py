@@ -110,7 +110,6 @@ def get_mappings(
             # the node description has not yet been defined
             node_description = None
 
-        # Only add the node id to title mapping if the title is defined for the node
         node_mappings.append(
             {
                 "id": node["data"]["id"],
