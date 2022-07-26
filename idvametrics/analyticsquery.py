@@ -167,9 +167,11 @@ class CompositeAggregationQuery(AnalyticsQuery):
 
         if "id" in document:
             try:
-                node = [e for e in self.mappings["nodes"] if e["id"] == document["id"]][
-                    0
-                ]
+                node = [
+                    node_mapping
+                    for node_mapping in self.mappings["nodes"]
+                    if node_mapping["id"] == document["id"]
+                ][0]
                 document["nodeName"] = node["title"]
                 document["nodeDescription"] = node["description"]
             except IndexError:
