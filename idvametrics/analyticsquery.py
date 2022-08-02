@@ -162,16 +162,21 @@ class CompositeAggregationQuery(AnalyticsQuery):
         for key in self.metric_definition["metric_keys"]:
             document[key] = bucket["key"][key]
 
-        # Adding a nodeName to the document, if required.
-        keys = document.keys()
-        if "id" in keys:
-            connector_id = bucket["connectorId"]["buckets"][0]["key"]
-            node_id = document["id"]
+        for field in self.metric_definition["top_hit_fields"]:
+            document[field] = bucket["top_hits"]["hits"]["hits"][0]["_source"][field]
+
+        if "id" in document:
             try:
-                node = [e for e in self.mappings["nodes"] if e["id"] == node_id][0]
+                node = [
+                    node_mapping
+                    for node_mapping in self.mappings["nodes"]
+                    if node_mapping["id"] == document["id"]
+                ][0]
                 document["nodeName"] = node["title"]
+                document["nodeDescription"] = node["description"]
             except IndexError:
-                document["nodeName"] = connector_id
+                document["nodeName"] = None
+                document["nodeDescription"] = None
 
         return document
 
@@ -352,7 +357,9 @@ class ScanQuery(AnalyticsQuery):
         """
         Runs the query against the specified Elasticsearch index.
         """
-        return self.elasticsearch.search(index=self.index_pattern, body=self.query, scroll='5m')
+        return self.elasticsearch.search(
+            index=self.index_pattern, body=self.query, scroll="5m"
+        )
 
     def __create_document_id(self, hit):
         """
@@ -431,7 +438,7 @@ class ScanQuery(AnalyticsQuery):
                 document["nodeName"] = node["title"]
             except IndexError:
                 document["nodeName"] = (
-                    source["connectorId"] if "connectorId" in source else ""
+                    source["connectorId"] if "connectorId" in source else None
                 )
 
         return document
@@ -468,7 +475,7 @@ class ScanQuery(AnalyticsQuery):
                     index_to_update, document_id, document
                 )
                 bulk_actions.append(bulk_action)
-            query_result = self.elasticsearch.scroll(scroll_id=scroll_id, scroll = '1m')
+            query_result = self.elasticsearch.scroll(scroll_id=scroll_id, scroll="1m")
             scroll_id = query_result["_scroll_id"]
             hits = query_result["hits"]["hits"]
         return bulk_actions
