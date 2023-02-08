@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 jobs:
   prometheus:
-    if: github.repository_owner == '18F'
+    if: github.repository_owner == 'GSA-TTS'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -36,10 +36,10 @@ jobs:
           author: idva-bot <idva@gsa.gov>
           branch: bump-prometheus-version
           reviewers: |
-            18f/idva-partners
+            GSA-TTS/idva-partners
 
   alertmanager:
-    if: github.repository_owner == '18F'
+    if: github.repository_owner == 'GSA-TTS'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -65,10 +65,10 @@ jobs:
           author: idva-bot <idva@gsa.gov>
           branch: bump-alertmanager-version
           reviewers: |
-            18f/idva-partners
+            GSA-TTS/idva-partners
 
   cortex:
-    if: github.repository_owner == '18F'
+    if: github.repository_owner == 'GSA-TTS'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -94,10 +94,10 @@ jobs:
           author: idva-bot <idva@gsa.gov>
           branch: bump-cortex-version
           reviewers: |
-            18f/idva-partners
+            GSA-TTS/idva-partners
 
   grafana:
-    if: github.repository_owner == '18F'
+    if: github.repository_owner == 'GSA-TTS'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -123,10 +123,10 @@ jobs:
           author: idva-bot <idva@gsa.gov>
           branch: bump-grafana-version
           reviewers: |
-            18f/idva-partners
+            GSA-TTS/idva-partners
 
   watchtower:
-    if: github.repository_owner == '18F'
+    if: github.repository_owner == 'GSA-TTS'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -151,4 +151,4 @@ jobs:
           committer: idva-bot <idva@gsa.gov>
           branch: bump-watchtower-version
           reviewers: |
-            18f/idva-partners
+            GSA-TTS/idva-partners

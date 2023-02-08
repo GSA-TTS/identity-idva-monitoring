@@ -9,6 +9,6 @@ configuration file.
 ## Deploy-<tool-name>
 Deploys the tool to the correct IDVA environment within Cloud.gov. The
 deploy workflow will run a check on the config file and only deploy if that
-test are successful. Deployment will also only be triggered in the 18F
+test are successful. Deployment will also only be triggered in the GSA-TTS
 repository. This will prevent forks from needlessly running workflows that
 will always fail (forks won't be able to authenticate into the dev environment).
