@@ -95,7 +95,6 @@ def get_mappings(
 
     node_mappings = []
     for node in nodes:
-
         try:
             # the node title is defined
             node_title = node["data"]["properties"]["nodeTitle"]["value"]
