@@ -13,10 +13,10 @@ distributor:
   shard_by_all_labels: true
   pool:
     health_check_ingesters: true
-  ha_tracker:
-    enable_ha_tracker: true
-    kvstore:
-      store: inmemory
+  # ha_tracker:
+  #   enable_ha_tracker: true
+  #   kvstore:
+  #     store: inmemory
 
 ingester_client:
   grpc_client_config:
