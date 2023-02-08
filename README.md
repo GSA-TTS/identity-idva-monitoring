@@ -39,7 +39,7 @@ envsubst < alertmanager/alert-config.yml > alertmanager/alertmanager.yml
 
 ## CI/CD Workflows with GitHub Actions
 The most up-to-date information about the CI/CD flows for this repo can be found in the
-[GitHub workflows directory](https://github.com/18F/identity-idva-monitoring/tree/main/.github/workflows)
+[GitHub workflows directory](https://github.com/GSA-TTS/identity-idva-monitoring/tree/main/.github/workflows)
 
 ## Public domain
 
