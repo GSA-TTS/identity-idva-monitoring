@@ -11,3 +11,4 @@ applications:
     command: ./run_cron.sh
     services:
       - cron-service-account
+      - outbound-proxy
