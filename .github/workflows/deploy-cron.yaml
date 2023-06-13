@@ -28,6 +28,10 @@ jobs:
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
 
+      - name: Install Cron
+        run: ./install_cron.sh
+        working-directory: ./cron
+
       - name: Deploy cron
         run: cf push --strategy rolling
         working-directory: ./cron

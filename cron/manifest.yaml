@@ -8,8 +8,6 @@ applications:
     buildpacks:
       - https://github.com/cloudfoundry/apt-buildpack
       - binary_buildpack
-    command: |
-      ./install.sh
-      ./supercronic crontab
+    command: run_cron.sh
     services:
       - cron-service-account

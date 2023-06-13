@@ -28,6 +28,10 @@ jobs:
           cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG }}
 
+      - name: Install Redis Exporter
+        run: ./install_redis_exporter.sh
+        working-directory: ./redis
+
       - name: Deploy Redis Exporter
         run: cf push
           --vars-file vars.yaml

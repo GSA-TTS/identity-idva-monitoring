@@ -9,7 +9,6 @@ applications:
     buildpacks:
       - binary_buildpack
     command: |
-      ./install_redis_exporter.sh && \
       ./redis_exporter --web.listen-address 0.0.0.0:8080 \
         --redis.addr "rediss://$( echo $VCAP_SERVICES | jq -r '."aws-elasticache-redis"[0].credentials.host')" \
         --redis.password $( echo $VCAP_SERVICES | jq -r '."aws-elasticache-redis"[0].credentials.password') \
