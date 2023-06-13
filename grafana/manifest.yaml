@@ -1,7 +1,7 @@
 ---
 applications:
   - name: grafana
-    stack: cflinuxfs3
+    stack: cflinuxfs4
     instances: 2
     memory: 256MB
     health-check-type: http

@@ -12,4 +12,4 @@ applications:
       ./install.sh
       ./supercronic crontab
     services:
-      - idva-cicd-service-account
+      - cron-service-account
