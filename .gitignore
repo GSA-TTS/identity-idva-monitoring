@@ -1,2 +1,4 @@
 alertmanager.yml
 prometheus.yml
+.venv
+__pycache__
