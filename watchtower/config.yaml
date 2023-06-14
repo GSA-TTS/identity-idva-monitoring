@@ -105,14 +105,27 @@ apps:
       routes:
         - identity-idva-monitoring-watchtower-${ENVIRONMENT_NAME}.apps.internal
     - name: gdrive
+      routes:
+        - idva-gdrive-${ENVIRONMENT_NAME}.apps.internal
     - name: id-filter
+      routes:
+        - idva-id-filter-${ENVIRONMENT_NAME}.apps.internal
     - name: incode
+      routes:
+        - idva-incode-${ENVIRONMENT_NAME}.apps.internal
     - name: qualtrix
+      routes:
+        - idva-qualtrix-${ENVIRONMENT_NAME}.apps.internal
     - name: s3-interface
+      routes:
+        - idva-s3interface-${ENVIRONMENT_NAME}.apps.internal
     - name: sk-clear
     - name: sk-generic
     - name: sk-samlidp
     - name: token
+      routes:
+        - identity-idva-token-service-${ENVIRONMENT_NAME}.apps.internal
+        - identity-idva-token-service-${ENVIRONMENT_NAME}.app.cloud.gov
 
 spaces:
   enabled: true
