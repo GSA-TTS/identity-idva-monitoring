@@ -35,7 +35,7 @@ cf add-network-policy grafana prometheus               --protocol tcp --port 614
 
 # Source = Prometheus
 cf add-network-policy prometheus alertmanager          --protocol tcp --port 61443 -s "$public"
-cf add-network-policy prometheus cf-metrics            --protocol tcp --port 61443 -s "$restricted"
+cf add-network-policy prometheus cf-metrics            --protocol tcp --port 61443 -s "$public"
 cf add-network-policy prometheus cortex                --protocol tcp --port 61443 -s "$public"
 cf add-network-policy prometheus grafana               --protocol tcp --port 61443 -s "$closed"
 cf add-network-policy prometheus elasticsearch-metrics --protocol tcp --port 61443 -s "$closed"
