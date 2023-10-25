@@ -1,3 +1,5 @@
 @hourly echo "Testing cron runner"
 
 @hourly cf run-task cron --command 'echo "Test CF Task"' --name "test-cron-task"
+
+00 07 * * * cf run-task cron --command 'curl -XPOST "http://idva-gdrive-prod.apps.internal/analytics"' --name "analytics-task"
