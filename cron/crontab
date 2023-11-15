@@ -2,4 +2,4 @@
 
 @hourly cf run-task cron --command 'echo "Test CF Task"' --name "test-cron-task"
 
-@daily curl -XPOST "http://$GDRIVE_APP_URL:$GDRIVE_APP_PORT/analytics"
+@daily curl -XPOST "http://$GDRIVE_APP_HOST:$GDRIVE_APP_PORT/analytics"
