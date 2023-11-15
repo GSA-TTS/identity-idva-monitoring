@@ -2,4 +2,4 @@
 
 @hourly cf run-task cron --command 'echo "Test CF Task"' --name "test-cron-task"
 
-00 07 * * * cf run-task cron --command 'curl -XPOST "http://idva-gdrive-prod.apps.internal/analytics"' --name "analytics-task"
+@daily curl -XPOST "http://$GDRIVE_APP_URL:$GDRIVE_APP_PORT/analytics"
