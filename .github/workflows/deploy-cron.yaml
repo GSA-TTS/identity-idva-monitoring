@@ -39,4 +39,4 @@ jobs:
       - name: Add network policies
         run: |
           cf add-network-policy cron outbound-proxy -s ${{ steps.cf-setup.outputs.target-environment }}-public --protocol tcp --port 8080
-          cf add-network-policy cron gdrive -s ${{ steps.cf-setup.outputs.target-environment }}--public --protocol tcp --port 8080
+          cf add-network-policy cron gdrive -s ${{ steps.cf-setup.outputs.target-environment }} --protocol tcp --port 8080
