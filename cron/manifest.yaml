@@ -12,3 +12,6 @@ applications:
     services:
       - cron-service-account
       - outbound-proxy
+    env:
+      GDRIVE_APP_HOST: "idva-gdrive-((ENVIRONMENT_NAME)).apps.internal"
+      GDRIVE_APP_PORT: 8080
