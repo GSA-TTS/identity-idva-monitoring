@@ -31,12 +31,9 @@ jobs:
       - name: Install Cron
         run: ./install_cron.sh
         working-directory: ./cron
-      
-      - name: Set enviornment name
-        run: cf push --var ENVIRONMENT=${{ steps.cf-setup.outputs.target-environment }} --strategy rolling
-
+        
       - name: Deploy cron
-        run: cf push --strategy rolling
+        run: cf push --var ENVIRONMENT=${{ steps.cf-setup.outputs.target-environment }} --strategy rolling
         working-directory: ./cron
         
       - name: Add network policies
