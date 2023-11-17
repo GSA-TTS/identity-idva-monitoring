@@ -31,11 +31,11 @@ jobs:
       - name: Install Cron
         run: ./install_cron.sh
         working-directory: ./cron
-
+        
       - name: Deploy cron
-        run: cf push --strategy rolling
+        run: cf push --var ENVIRONMENT=${{ steps.cf-setup.outputs.target-environment }} --strategy rolling
         working-directory: ./cron
-
+        
       - name: Add network policies
         run: |
           cf add-network-policy cron outbound-proxy -s ${{ steps.cf-setup.outputs.target-environment }}-public --protocol tcp --port 8080
